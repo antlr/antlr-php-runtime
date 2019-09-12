@@ -1,0 +1,36 @@
+{
+  "name": "antlr/antlr4-php-runtime",
+  "type": "library",
+  "description": "PHP 7 runtime for ANTLR 4",
+  "license": [
+    "BSD-3-Clause"
+  ],
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "require": {
+    "php": "^7.2",
+    "ext-mbstring": "*"
+  },
+  "require-dev": {
+    "phpstan/phpstan": "^0.11.4",
+    "phpunit/phpunit": "^8.0.4",
+    "slevomat/coding-standard": "^5.0.4",
+    "squizlabs/php_codesniffer": "^3.4.1",
+    "phpstan/extension-installer": "^1.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Antlr\\Antlr4\\Runtime\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Antlr\\Antlr4\\Runtime\\Tests\\": "tests/"
+    }
+  },
+  "extra": {
+    "branch-alias": {
+      "dev-master": "0.2-dev"
+    }
+  }
+}
