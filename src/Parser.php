@@ -417,6 +417,9 @@ abstract class Parser extends Recognizer
         $this->errorHandler = $handler;
     }
 
+    /**
+     * @return TokenStream|null
+     */
     public function getInputStream() : ?IntStream
     {
         return $this->getTokenStream();
