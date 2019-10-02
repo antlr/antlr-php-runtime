@@ -69,6 +69,16 @@ final class IntervalSet implements Equatable
         return self::subtractSets($this, $set);
     }
 
+    public function orSet(IntervalSet $other) : self
+    {
+        $result = new self();
+
+        $result->addSet($this);
+        $result->addSet($other);
+
+        return $result;
+    }
+
     /**
      * Compute the set difference between two interval sets. The specific
      * operation is `left - right`. If either of the input sets is `null`,
