@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Antlr\Antlr4\Runtime\Error\Exceptions;
 
-class ParseCancellationException extends \Exception
+class ParseCancellationException extends \LogicException
 {
     public static function from(\Throwable $exception) : self
     {
