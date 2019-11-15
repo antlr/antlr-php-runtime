@@ -1,4 +1,6 @@
 # ANTLR4 Runtime for PHP
+[![Travis CI](https://api.travis-ci.org/antlr/antlr-php-runtime.svg?branch=master)](https://travis-ci.org/antlr/antlr-php-runtime)
+[![BSD-3-Clause](https://img.shields.io/badge/license-BSD3-brightgreen.svg)](https://github.com/antlr/antlr-php-runtime/blob/master/LICENSE)
 
 ### First steps
 
