@@ -1,0 +1,14 @@
+language: php
+dist: trusty
+
+php:
+  - '7.2'
+  - '7.3'
+
+before_script:
+  - travis_retry composer self-update
+  - travis_retry composer update ${COMPOSER_FLAGS} --no-interaction
+
+script:
+  - vendor/bin/phpstan --level=max analyse src
+  - vendor/bin/phpcs
