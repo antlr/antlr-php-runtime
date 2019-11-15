@@ -4,4 +4,3 @@ includes:
 parameters:
     level: max
     paths: [src]
-    tmpDir: '%rootDir%/.cache/phpstan'
