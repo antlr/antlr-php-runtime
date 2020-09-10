@@ -13,7 +13,7 @@ namespace Antlr\Antlr4\Runtime\Tree;
  * You can associate any type of variable with a node.
  *
  * Example use:
- * <code>
+ *
  *     use Antlr\Antlr4\Runtime\Tree\ParseTreeProperty;
  *
  *     // Declare a ParseTreeProperty-container for values in your listener
@@ -27,7 +27,7 @@ namespace Antlr\Antlr4\Runtime\Tree;
  *     $this->values->put($node, $someValue);
  *     $aValue = $this->values->get($node);
  *     $this->values->removeFrom($node);
- *</code>
+ *
  *
  * This class is implemented in PHP as a wrapper around \SplObjectStorage
  */
@@ -63,7 +63,7 @@ Class ParseTreeProperty
      * @param  mixed     $value Any value
      * @return void
      */
-    public function put(ParseTree $node, $value)
+    public function put(ParseTree $node, $value): void
     {
         $this->storage->attach($node, $value);
     }
