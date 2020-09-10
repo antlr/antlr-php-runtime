@@ -35,7 +35,7 @@ use \SplObjectStorage;
  */
 class ParseTreeProperty
 {
-	protected $storage;
+	private $storage;
 
 	public function __construct()
 	{
@@ -51,9 +51,11 @@ class ParseTreeProperty
 	public function get(ParseTree $node)
 	{
 		$value = null;
+
 		if ($this->storage->contains($node)) {
 			$value = $this->storage->offsetGet($node);
 		}
+
 		return $value;
 	}
 
@@ -79,6 +81,7 @@ class ParseTreeProperty
 	{
 		$value = $this->get($node);
 		$this->storage->detach($node);
+
 		return $value;
 	}
 
