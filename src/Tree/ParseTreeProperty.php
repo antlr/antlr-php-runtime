@@ -35,54 +35,54 @@ use \SplObjectStorage;
  */
 class ParseTreeProperty
 {
-	private $storage;
+    private $storage;
 
-	public function __construct()
-	{
-		$this->storage = new SplObjectStorage();
-	}
+    public function __construct()
+    {
+        $this->storage = new SplObjectStorage();
+    }
 
-	/**
-	 * Get the value associated with $node from the storage.
-	 *
-	 * @param ParseTree $node The {@see ParseTree} with which the value is associated.
-	 * @return mixed     $value The stored value | null when $node is not in the storage.
-	 */
-	public function get(ParseTree $node)
-	{
-		$value = null;
+    /**
+     * Get the value associated with $node from the storage.
+     *
+     * @param ParseTree $node The {@see ParseTree} with which the value is associated.
+     * @return mixed     $value The stored value | null when $node is not in the storage.
+     */
+    public function get(ParseTree $node)
+    {
+        $value = null;
 
-		if ($this->storage->contains($node)) {
-			$value = $this->storage->offsetGet($node);
-		}
+        if ($this->storage->contains($node)) {
+            $value = $this->storage->offsetGet($node);
+        }
 
-		return $value;
-	}
+        return $value;
+    }
 
-	/**
-	 * Put a value associated with $node in the storage.
-	 *
-	 * @param ParseTree $node The {@see ParseTree} with which the value is associated.
-	 * @param mixed $value Any value
-	 * @return void
-	 */
-	public function put(ParseTree $node, $value): void
-	{
-		$this->storage->attach($node, $value);
-	}
+    /**
+     * Put a value associated with $node in the storage.
+     *
+     * @param ParseTree $node The {@see ParseTree} with which the value is associated.
+     * @param mixed $value Any value
+     * @return void
+     */
+    public function put(ParseTree $node, $value): void
+    {
+        $this->storage->attach($node, $value);
+    }
 
-	/**
-	 * Remove the value associated with $node from the storage.
-	 *
-	 * @param ParseTree $node The {@see ParseTree} with which the value is associated.
-	 * @return mixed     $value The removed value  | null when $node was not in the storage.
-	 */
-	public function removeFrom(ParseTree $node)
-	{
-		$value = $this->get($node);
-		$this->storage->detach($node);
+    /**
+     * Remove the value associated with $node from the storage.
+     *
+     * @param ParseTree $node The {@see ParseTree} with which the value is associated.
+     * @return mixed     $value The removed value  | null when $node was not in the storage.
+     */
+    public function removeFrom(ParseTree $node)
+    {
+        $value = $this->get($node);
+        $this->storage->detach($node);
 
-		return $value;
-	}
+        return $value;
+    }
 
 }
