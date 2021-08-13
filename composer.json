@@ -1,7 +1,7 @@
 {
   "name": "antlr/antlr4-php-runtime",
   "type": "library",
-  "description": "PHP 7 runtime for ANTLR 4",
+  "description": "PHP 7 and 8.0 runtime for ANTLR 4",
   "keywords": ["antlr4", "php", "runtime"],
   "license": [
     "BSD-3-Clause"
@@ -9,7 +9,7 @@
   "minimum-stability": "dev",
   "prefer-stable": true,
   "require": {
-    "php": "^7.2",
+    "php": "7.4 - 8.0",
     "ext-mbstring": "*"
   },
   "require-dev": {
