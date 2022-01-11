@@ -22,6 +22,8 @@ interface Tree
      * a leaf node or a {@see RuleContext} object representing a rule
      * invocation. For abstract syntax trees (ASTs), this is a {@see Token}
      * object.
+     *
+     * @return mixed
      */
     public function getPayload();
 

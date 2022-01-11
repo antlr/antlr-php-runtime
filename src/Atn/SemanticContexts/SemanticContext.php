@@ -78,7 +78,7 @@ abstract class SemanticContext implements Hashable
      * prediction, so we passed in the outer context here in case of context
      * dependent predicate evaluation.
      */
-    abstract public function eval(Recognizer $parser, RuleContext $parserCallStack);
+    abstract public function eval(Recognizer $parser, RuleContext $parserCallStack) : bool;
 
     /**
      * Evaluate the precedence predicates for the context and reduce the result.

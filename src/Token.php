@@ -106,5 +106,5 @@ interface Token
      */
     public function getInputStream() : ?CharStream;
 
-    public function __toString();
+    public function __toString() : string;
 }

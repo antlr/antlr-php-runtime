@@ -36,6 +36,8 @@ interface ParseTree extends SyntaxTree
 
     /**
      * The {@see ParseTreeVisitor} needs a double dispatch method.
+     *
+     * @return mixed
      */
     public function accept(ParseTreeVisitor $visitor);
 

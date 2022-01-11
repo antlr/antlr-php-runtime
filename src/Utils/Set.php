@@ -35,6 +35,9 @@ final class Set implements Equatable, \IteratorAggregate, \Countable
         return $this->size;
     }
 
+    /**
+     * @param mixed $value
+     */
     public function contains($value) : bool
     {
         if (!$value instanceof Hashable) {

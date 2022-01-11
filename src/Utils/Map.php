@@ -187,6 +187,10 @@ final class Map implements Equatable, \Countable, \IteratorAggregate
         }
     }
 
+    /**
+     * @param mixed $left
+     * @param mixed $right
+     */
     private static function isEqual($left, $right) : bool
     {
         if ($left instanceof Equatable && $right instanceof Equatable) {

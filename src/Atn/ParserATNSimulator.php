@@ -2287,7 +2287,7 @@ final class ParserATNSimulator extends ATNSimulator
 
     protected function noViableAlt(
         TokenStream $input,
-        $outerContext,
+        ?ParserRuleContext $outerContext,
         ?ATNConfigSet $configs,
         int $startIndex
     ) : NoViableAltException {

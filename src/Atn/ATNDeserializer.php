@@ -719,7 +719,7 @@ final class ATNDeserializer
         }
     }
 
-    private function checkCondition(?bool $condition, $message = 'IllegalState') : void
+    private function checkCondition(?bool $condition, string $message = 'IllegalState') : void
     {
         if ($condition === null) {
             throw new \InvalidArgumentException($message);
