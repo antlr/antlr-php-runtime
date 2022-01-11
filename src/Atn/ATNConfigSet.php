@@ -209,6 +209,9 @@ class ATNConfigSet implements Hashable
         return $this->configs;
     }
 
+    /**
+     * @phpstan-return Set<ATNState>
+     */
     public function getStates() : Set
     {
         /** @var Set<ATNState> $states */
@@ -341,6 +344,9 @@ class ATNConfigSet implements Hashable
         return $this->contains($item);
     }
 
+    /**
+     * @return \Iterator<int, ATNConfig>
+     */
     public function getIterator() : \Iterator
     {
         return new \ArrayIterator($this->configs);

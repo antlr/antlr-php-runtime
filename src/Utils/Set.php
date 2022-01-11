@@ -92,7 +92,7 @@ final class Set implements Equatable, IteratorAggregate, \Countable
     }
 
     /**
-     * @param T $value
+     * @phpstan-param T $value
      *
      * @return T|null
      */
@@ -220,7 +220,7 @@ final class Set implements Equatable, IteratorAggregate, \Countable
     }
 
     /**
-     * @phpstan-return Iterator<int, T>
+     * @return Iterator<int, T>
      */
     public function getIterator() : Iterator
     {

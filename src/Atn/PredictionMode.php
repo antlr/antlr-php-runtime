@@ -539,6 +539,8 @@ final class PredictionMode
      * configuration `c` in `configs`:
      *
      *     map[c.{@see ATNConfig::$state}] U= c.{@see ATNConfig::$alt}
+     *
+     * @return Map<ATNState, BitSet>
      */
     public static function getStateToAltMap(ATNConfigSet $configs) : Map
     {

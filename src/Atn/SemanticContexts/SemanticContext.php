@@ -103,6 +103,8 @@ abstract class SemanticContext implements Hashable
     }
 
     /**
+     * @phpstan-param Set<Hashable> $set
+     *
      * @return list<PrecedencePredicate>
      */
     public static function filterPrecedencePredicates(Set $set) : array
