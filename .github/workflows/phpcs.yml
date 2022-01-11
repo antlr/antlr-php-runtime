@@ -1,3 +1,5 @@
+name: PHPCS
+
 on:
   - push
   - pull_request
