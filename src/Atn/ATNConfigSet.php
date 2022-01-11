@@ -98,7 +98,8 @@ class ATNConfigSet implements Hashable
          * not including context. Wiped out when we go readonly as this se
          * becomes a DFA state.
          */
-        $this->configLookup = new Set(new class implements Equivalence { // @phpstan-ignore-line
+        // @phpstan-ignore-next-line
+        $this->configLookup = new Set(new class implements Equivalence {
             public function equivalent(Hashable $left, Hashable $right) : bool
             {
                 if ($left === $right) {
@@ -208,9 +209,6 @@ class ATNConfigSet implements Hashable
         return $this->configs;
     }
 
-    /**
-     * @return Set<ATNState>
-     */
     public function getStates() : Set
     {
         /** @var Set<ATNState> $states */
@@ -343,9 +341,6 @@ class ATNConfigSet implements Hashable
         return $this->contains($item);
     }
 
-    /**
-     * @return \Iterator<int, ATNConfig>
-     */
     public function getIterator() : \Iterator
     {
         return new \ArrayIterator($this->configs);

@@ -15,7 +15,7 @@ use IteratorAggregate;
  * @template TValue
  * @implements IteratorAggregate<TKey, TValue>
  */
-final class Map implements Equatable, \Countable, \IteratorAggregate
+final class Map implements Equatable, \Countable, IteratorAggregate
 {
     /** @var array<int, array<int, array{TKey, TValue}>> */
     private $table = [];

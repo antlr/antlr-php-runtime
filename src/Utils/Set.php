@@ -8,13 +8,14 @@ use Antlr\Antlr4\Runtime\Comparison\DefaultEquivalence;
 use Antlr\Antlr4\Runtime\Comparison\Equatable;
 use Antlr\Antlr4\Runtime\Comparison\Equivalence;
 use Antlr\Antlr4\Runtime\Comparison\Hashable;
+use Iterator;
 use IteratorAggregate;
 
 /**
  * @template T of Hashable
  * @implements IteratorAggregate<int, T>
  */
-final class Set implements Equatable, \IteratorAggregate, \Countable
+final class Set implements Equatable, IteratorAggregate, \Countable
 {
     /** @var array<int, list<T>> */
     private $table = [];
@@ -91,7 +92,7 @@ final class Set implements Equatable, \IteratorAggregate, \Countable
     }
 
     /**
-     * @phpstan-param T $value
+     * @param T $value
      *
      * @return T|null
      */
@@ -219,9 +220,9 @@ final class Set implements Equatable, \IteratorAggregate, \Countable
     }
 
     /**
-     * @return \Iterator<int, T>
+     * @phpstan-return Iterator<int, T>
      */
-    public function getIterator() : \Iterator
+    public function getIterator() : Iterator
     {
         foreach ($this->table as $bucket) {
             foreach ($bucket as $value) {

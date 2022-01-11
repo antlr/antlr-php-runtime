@@ -1590,8 +1590,6 @@ final class ParserATNSimulator extends ATNSimulator
      *       alternative. We will not be caching that DFA state and it is a
      *       waste to pursue the closure. Might have to advance when we do
      *       ambig detection thought :(
-     *
-     * @param Set<ATNConfig> $closureBusy
      */
     protected function closure(
         ATNConfig $config,
@@ -1618,9 +1616,6 @@ final class ParserATNSimulator extends ATNSimulator
         }
     }
 
-    /**
-     * @param Set<ATNConfig> $closureBusy
-     */
     protected function closureCheckingStopState(
         ATNConfig $config,
         ATNConfigSet $configs,
@@ -1718,8 +1713,6 @@ final class ParserATNSimulator extends ATNSimulator
 
     /**
      * Do the actual work of walking epsilon edges.
-     *
-     * @param Set<ATNConfig> $closureBusy
      */
     protected function closure_(
         ATNConfig $config,

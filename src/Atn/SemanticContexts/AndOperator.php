@@ -9,7 +9,6 @@ use Antlr\Antlr4\Runtime\Comparison\Hasher;
 use Antlr\Antlr4\Runtime\Recognizer;
 use Antlr\Antlr4\Runtime\RuleContext;
 use Antlr\Antlr4\Runtime\Utils\Set;
-use ArrayIterator;
 
 /**
  * A semantic context which is true whenever none of the contained contexts
