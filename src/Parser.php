@@ -835,12 +835,6 @@ abstract class Parser extends Recognizer
         return $atn->nextTokens($s);
     }
 
-    /** Get a rule's index (i.e., `RULE_ruleName` field) or -1 if not found. */
-    public function getRuleIndex(string $ruleName) : int
-    {
-        return $this->getRuleIndexMap()[$ruleName] ?? -1;
-    }
-
     /**
      * Return the string array of the rule names in your parser instance
      * leading up to a call to the current rule. You could override if

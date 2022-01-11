@@ -91,12 +91,6 @@ final class ATNDeserializer
     /** @var string */
     private $uuid = '';
 
-    /** @var array<int, callable|null>|null */
-    private $stateFactories;
-
-    /** @var array<int, callable|null>|null */
-    private $actionFactories;
-
     public function __construct(?ATNDeserializationOptions $options = null)
     {
         $this->deserializationOptions = $options ?? ATNDeserializationOptions::defaultOptions();
@@ -719,7 +713,7 @@ final class ATNDeserializer
         }
     }
 
-    private function checkCondition(?bool $condition, $message = 'IllegalState') : void
+    private function checkCondition(?bool $condition, string $message = 'IllegalState') : void
     {
         if ($condition === null) {
             throw new \InvalidArgumentException($message);

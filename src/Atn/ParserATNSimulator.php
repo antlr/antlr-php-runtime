@@ -229,6 +229,8 @@ use Antlr\Antlr4\Runtime\VocabularyImpl;
  * Of course, if the input is invalid, then we will get an error for sure in
  * both SLL and LL parsing. Erroneous input will therefore require 2 passes over
  * the input.
+ *
+ * @phpstan-type MergeCacheKey \Antlr\Antlr4\Runtime\PredictionContexts\SingletonPredictionContext|\Antlr\Antlr4\Runtime\PredictionContexts\ArrayPredictionContext
  */
 final class ParserATNSimulator extends ATNSimulator
 {
@@ -271,7 +273,7 @@ final class ParserATNSimulator extends ATNSimulator
      * the merge if we ever see a and b again. Note that (b,a)&rarr;c should
      * also be examined during cache lookup.
      *
-     * @var DoubleKeyMap|null
+     * @var DoubleKeyMap<MergeCacheKey, MergeCacheKey, PredictionContext>|null
      */
     protected $mergeCache;
 
@@ -894,7 +896,7 @@ final class ParserATNSimulator extends ATNSimulator
         }
 
         if ($this->mergeCache === null) {
-            $this->mergeCache = new DoubleKeyMap();
+            $this->mergeCache = new DoubleKeyMap(); // @phpstan-ignore-line
         }
 
         $intermediate = new ATNConfigSet($fullCtx);
@@ -943,7 +945,7 @@ final class ParserATNSimulator extends ATNSimulator
 
                 if ($target !== null) {
                     $cfg = new ATNConfig($c, $target);
-                    $intermediate->add($cfg, $this->mergeCache);
+                    $intermediate->add($cfg, $this->mergeCache); // @phpstan-ignore-line
 
                     if (self::$debug_add) {
                         $this->log[] = \sprintf('Added %s to intermediate', (string) $cfg);
@@ -983,6 +985,7 @@ final class ParserATNSimulator extends ATNSimulator
         // operation on the intermediate set to compute its initial value.
         if ($reach === null) {
             $reach = new ATNConfigSet($fullCtx);
+            /** @var Set<ATNConfig> $closureBusy */
             $closureBusy = new Set();
             $treatEofAsEpsilon = $t === Token::EOF;
 
@@ -1098,6 +1101,7 @@ final class ParserATNSimulator extends ATNSimulator
 
         foreach ($p->getTransitions() as $i => $t) {
             $c = new ATNConfig(null, $t->target, $initialContext, null, $i + 1);
+            /** @var Set<ATNConfig> $closureBusy */
             $closureBusy = new Set();
 
             $this->closure($c, $configs, $closureBusy, true, $fullCtx, false);
@@ -1586,6 +1590,8 @@ final class ParserATNSimulator extends ATNSimulator
      *       alternative. We will not be caching that DFA state and it is a
      *       waste to pursue the closure. Might have to advance when we do
      *       ambig detection thought :(
+     *
+     * @param Set<ATNConfig> $closureBusy
      */
     protected function closure(
         ATNConfig $config,
@@ -1612,6 +1618,9 @@ final class ParserATNSimulator extends ATNSimulator
         }
     }
 
+    /**
+     * @param Set<ATNConfig> $closureBusy
+     */
     protected function closureCheckingStopState(
         ATNConfig $config,
         ATNConfigSet $configs,
@@ -1633,7 +1642,8 @@ final class ParserATNSimulator extends ATNSimulator
             // We hit rule end. If we have context info, use it run thru all possible stack tops in ctx
 
             if ($config->context !== null && !$config->context->isEmpty()) {
-                for ($i =0; $i < $config->context->getLength(); $i++) {
+                for ($i =0; $i < $config->context->getLength(); $i++) { // @phpstan-ignore-line
+                    // @phpstan-ignore-next-line
                     if ($config->context->getReturnState($i) === PredictionContext::EMPTY_RETURN_STATE) {
                         if ($fullCtx) {
                             $configs->add(
@@ -1663,7 +1673,8 @@ final class ParserATNSimulator extends ATNSimulator
                         continue;
                     }
 
-                    $returnState = $this->atn->states[$config->context->getReturnState($i)];
+                    $returnState = $this->atn->states[$config->context->getReturnState($i)]; // @phpstan-ignore-line
+                    // @phpstan-ignore-next-line
                     $newContext = $config->context->getParent($i);// "pop" return state
 
                     $c = new ATNConfig(null, $returnState, $newContext, $config->semanticContext, $config->alt);
@@ -1707,6 +1718,8 @@ final class ParserATNSimulator extends ATNSimulator
 
     /**
      * Do the actual work of walking epsilon edges.
+     *
+     * @param Set<ATNConfig> $closureBusy
      */
     protected function closure_(
         ATNConfig $config,
@@ -2287,7 +2300,7 @@ final class ParserATNSimulator extends ATNSimulator
 
     protected function noViableAlt(
         TokenStream $input,
-        $outerContext,
+        ?ParserRuleContext $outerContext,
         ?ATNConfigSet $configs,
         int $startIndex
     ) : NoViableAltException {

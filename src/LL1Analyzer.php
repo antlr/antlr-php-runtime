@@ -55,6 +55,7 @@ class LL1Analyzer
         $look = [];
         for ($alt = 0; $alt < $s->getNumberOfTransitions(); $alt++) {
             $interval = new IntervalSet();
+            /** @var Set<ATNConfig> $lookBusy */
             $lookBusy = new Set();
             $seeThruPreds = false; // fail to get lookahead upon pred
 
@@ -109,12 +110,15 @@ class LL1Analyzer
             PredictionContext::fromRuleContext($s->atn, $context) :
             null;
 
+        /** @var Set<ATNConfig> $lookBusy */
+        $lookBusy = new Set();
+
         $this->lookRecursively(
             $s,
             $stopState,
             $lookContext,
             $r,
-            new Set(),
+            $lookBusy,
             new BitSet(),
             $seeThruPreds,
             true
@@ -143,7 +147,7 @@ class LL1Analyzer
      *                                                if the outer context should
      *                                                not be used.
      * @param IntervalSet            $look            The result lookahead set.
-     * @param Set                    $lookBusy        A set used for preventing
+     * @param Set<ATNConfig>         $lookBusy        A set used for preventing
      *                                                epsilon closures in the ATN
      *                                                from causing a stack overflow.
      *                                                Outside code should pass

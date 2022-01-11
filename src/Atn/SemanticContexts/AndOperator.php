@@ -9,6 +9,7 @@ use Antlr\Antlr4\Runtime\Comparison\Hasher;
 use Antlr\Antlr4\Runtime\Recognizer;
 use Antlr\Antlr4\Runtime\RuleContext;
 use Antlr\Antlr4\Runtime\Utils\Set;
+use ArrayIterator;
 
 /**
  * A semantic context which is true whenever none of the contained contexts
@@ -36,7 +37,7 @@ final class AndOperator extends Operator
             $operands->add($b);
         }
 
-        /** @var array<PrecedencePredicate> $precedencePredicates */
+        /** @var list<PrecedencePredicate> $precedencePredicates */
         $precedencePredicates = self::filterPrecedencePredicates($operands);
 
         if (\count($precedencePredicates) !== 0) {
@@ -142,7 +143,7 @@ final class AndOperator extends Operator
     }
 
     /**
-     * @param array<PrecedencePredicate> $predicates
+     * @param list<PrecedencePredicate> $predicates
      */
     private static function minPredicate(array $predicates) : object
     {

@@ -15,6 +15,8 @@ interface ParseTreeVisitor
      * Must return the result of visiting the parse tree.
      *
      * @param ParseTree $tree The {@see ParseTree} to visit.
+     *
+     * @return mixed
      */
     public function visit(ParseTree $tree);
 
@@ -23,6 +25,8 @@ interface ParseTreeVisitor
      * operation. Must return the result of visiting the parse tree.
      *
      * @param RuleNode $node The {@see RuleNode} whose children should be visited.
+     *
+     * @return mixed
      */
     public function visitChildren(RuleNode $node);
 
@@ -31,6 +35,8 @@ interface ParseTreeVisitor
      * Must return the result of visiting the parse tree.
      *
      * @param TerminalNode $node The {@see TerminalNode} to visit.
+     *
+     * @return mixed
      */
     public function visitTerminal(TerminalNode $node);
 
@@ -39,6 +45,8 @@ interface ParseTreeVisitor
      * Must return the result of visiting the parse tree.
      *
      * @param ErrorNode $node The {@see ErrorNode} to visit.
+     *
+     * @return mixed
      */
     public function visitErrorNode(ErrorNode $node);
 }

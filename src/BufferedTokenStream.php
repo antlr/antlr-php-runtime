@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Antlr\Antlr4\Runtime;
 
+use Antlr\Antlr4\Runtime\Comparison\Hashable;
 use Antlr\Antlr4\Runtime\Utils\Set;
 
 /**
@@ -288,6 +289,8 @@ class BufferedTokenStream implements TokenStream
 
     /**
      * Get all tokens from start..stop inclusively
+     *
+     * @param Set<Hashable>|null $types
      *
      * @return array<Token>|null
      */

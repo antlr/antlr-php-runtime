@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Antlr\Antlr4\Runtime\Atn;
 
 use Antlr\Antlr4\Runtime\Atn\SemanticContexts\SemanticContext;
+use Antlr\Antlr4\Runtime\Atn\States\ATNState;
 use Antlr\Antlr4\Runtime\Atn\States\RuleStopState;
 use Antlr\Antlr4\Runtime\Comparison\Equality;
 use Antlr\Antlr4\Runtime\Comparison\Equivalence;
@@ -456,7 +457,9 @@ final class PredictionMode
         $all = self::getAlts($altsets);
 
         if ($all->length() === 1) {
-            return $all->minValue();
+            $min = $all->minValue();
+            \assert(\is_int($min));
+            return $min;
         }
 
         return ATN::INVALID_ALT_NUMBER;
@@ -536,9 +539,12 @@ final class PredictionMode
      * configuration `c` in `configs`:
      *
      *     map[c.{@see ATNConfig::$state}] U= c.{@see ATNConfig::$alt}
+     *
+     * @return Map<ATNState, BitSet>
      */
     public static function getStateToAltMap(ATNConfigSet $configs) : Map
     {
+        /** @var Map<ATNState, BitSet> $m */
         $m = new Map();
 
         foreach ($configs->elements() as $c) {

@@ -174,7 +174,7 @@ abstract class Lexer extends Recognizer implements TokenSource
 
                 $this->token = null;
                 $this->channel = Token::DEFAULT_CHANNEL;
-                $this->tokenStartCharIndex = $this->input->getIndex();
+                $this->tokenStartCharIndex = $this->input->getIndex(); // @phpstan-ignore-line
                 $this->tokenStartCharPositionInLine = $this->interp->getCharPositionInLine();
                 $this->tokenStartLine = $this->interp->getLine();
                 $this->text = null;
@@ -184,13 +184,13 @@ abstract class Lexer extends Recognizer implements TokenSource
                     $this->type = Token::INVALID_TYPE;
                     $ttype = self::SKIP;
                     try {
-                        $ttype = $this->interp->match($this->input, $this->mode);
+                        $ttype = $this->interp->match($this->input, $this->mode); // @phpstan-ignore-line
                     } catch (LexerNoViableAltException $e) {
                         $this->notifyListeners($e); // report error
                         $this->recover($e);
                     }
 
-                    if ($this->input->LA(1) === Token::EOF) {
+                    if ($this->input->LA(1) === Token::EOF) { // @phpstan-ignore-line
                         $this->hitEOF = true;
                     }
 
@@ -222,7 +222,7 @@ abstract class Lexer extends Recognizer implements TokenSource
         } finally {
             // make sure we release marker after match or
             // unbuffered char stream will keep buffering
-            $this->input->release($tokenStartMarker);
+            $this->input->release($tokenStartMarker); // @phpstan-ignore-line
         }
     }
 

@@ -16,7 +16,7 @@ final class DFA
      * A set of all DFA states. Use {@see Map} so we can get old state back
      * ({@see Set} only allows you to see if it's there).
      *
-     * @var Set;
+     * @var Set<DFAState>
      */
     public $states;
 

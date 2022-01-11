@@ -8,10 +8,16 @@ use Antlr\Antlr4\Runtime\Comparison\DefaultEquivalence;
 use Antlr\Antlr4\Runtime\Comparison\Equatable;
 use Antlr\Antlr4\Runtime\Comparison\Equivalence;
 use Antlr\Antlr4\Runtime\Comparison\Hashable;
+use IteratorAggregate;
 
+/**
+ * @template TKey of Hashable
+ * @template TValue
+ * @implements IteratorAggregate<TKey, TValue>
+ */
 final class Map implements Equatable, \Countable, \IteratorAggregate
 {
-    /** @var array<int, array<array<Hashable, mixed>>> */
+    /** @var array<int, array<int, array{TKey, TValue}>> */
     private $table = [];
 
     /** @var int */
@@ -30,6 +36,9 @@ final class Map implements Equatable, \Countable, \IteratorAggregate
         return $this->size;
     }
 
+    /**
+     * @param TKey $key
+     */
     public function contains(Hashable $key) : bool
     {
         $hash = $this->equivalence->hash($key);
@@ -48,7 +57,7 @@ final class Map implements Equatable, \Countable, \IteratorAggregate
     }
 
     /**
-     * @return mixed
+     * @return TValue|null
      */
     public function get(Hashable $key)
     {
@@ -68,7 +77,8 @@ final class Map implements Equatable, \Countable, \IteratorAggregate
     }
 
     /**
-     * @param mixed $value
+     * @param TKey $key
+     * @param TValue $value
      */
     public function put(Hashable $key, $value) : void
     {
@@ -91,6 +101,9 @@ final class Map implements Equatable, \Countable, \IteratorAggregate
         $this->size++;
     }
 
+    /**
+     * @param TKey $key
+     */
     public function remove(Hashable $key) : void
     {
         $hash = $this->equivalence->hash($key);
@@ -149,7 +162,7 @@ final class Map implements Equatable, \Countable, \IteratorAggregate
     }
 
     /**
-     * @return array<Hashable>
+     * @return list<TKey>
      */
     public function getKeys() : array
     {
@@ -164,7 +177,7 @@ final class Map implements Equatable, \Countable, \IteratorAggregate
     }
 
     /**
-     * @return array<mixed>
+     * @return list<TValue>
      */
     public function getValues() : array
     {
@@ -178,6 +191,9 @@ final class Map implements Equatable, \Countable, \IteratorAggregate
         return $values;
     }
 
+    /**
+     * @return \Iterator<TKey, TValue>
+     */
     public function getIterator() : \Iterator
     {
         foreach ($this->table as $bucket) {
@@ -187,6 +203,10 @@ final class Map implements Equatable, \Countable, \IteratorAggregate
         }
     }
 
+    /**
+     * @param mixed $left
+     * @param mixed $right
+     */
     private static function isEqual($left, $right) : bool
     {
         if ($left instanceof Equatable && $right instanceof Equatable) {

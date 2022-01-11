@@ -38,7 +38,7 @@ class DFASerializer
 
             for ($i = 0; $i < $count; $i++) {
                 /** @var DFAState $t */
-                $t = $state->edges[$i];
+                $t = $state->edges[$i]; // @phpstan-ignore-line
 
                 if ($t !== null && $t->stateNumber !== 0x7FFFFFFF) {
                     $string .= $this->getStateString($state);

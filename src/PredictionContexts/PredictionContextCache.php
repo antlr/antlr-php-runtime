@@ -13,7 +13,7 @@ use Antlr\Antlr4\Runtime\Utils\Map;
  */
 class PredictionContextCache
 {
-    /** @var Map */
+    /** @var Map<PredictionContext, PredictionContext> */
     protected $cache;
 
     public function __construct()

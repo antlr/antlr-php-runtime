@@ -313,7 +313,7 @@ class LexerATNSimulator extends ATNSimulator
         }
 
         // Add an edge from s to target DFA found/created for reach
-        return $this->addDFAEdgeATNConfigSet($s, $t, $reach) ?? ATNSimulator::error();
+        return $this->addDFAEdgeATNConfigSet($s, $t, $reach);
     }
 
     protected function failOrAccept(SimState $prevAccept, CharStream $input, ATNConfigSet $reach, int $t) : int
@@ -707,7 +707,7 @@ class LexerATNSimulator extends ATNSimulator
         try {
             $this->consume($input);
 
-            return $this->recog->sempred(null, $ruleIndex, $predIndex);
+            return $this->recog->sempred(null, $ruleIndex, $predIndex); // @phpstan-ignore-line
         } finally {
             $this->charPositionInLine = $savedcolumn;
             $this->line = $savedLine;

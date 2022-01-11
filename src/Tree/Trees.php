@@ -80,7 +80,7 @@ class Trees
             return $payload->getText() ?? '';
         }
 
-        return (string) $tree->getPayload();
+        return (string) $payload;
     }
 
     /**
@@ -173,7 +173,7 @@ class Trees
      */
     public static function descendants(ParseTree $tree) : array
     {
-        $nodes = [$tree];
+        $nodes = [[$tree]];
         for ($i = 0; $i < $tree->getChildCount(); $i++) {
             $child = $tree->getChild($i);
 

@@ -200,6 +200,9 @@ class RuleContext implements RuleNode
         return 0;
     }
 
+    /**
+     * @return mixed
+     */
     public function accept(ParseTreeVisitor $visitor)
     {
         return $visitor->visitChildren($this);

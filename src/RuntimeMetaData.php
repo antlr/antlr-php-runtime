@@ -170,7 +170,7 @@ final class RuntimeMetaData
         $referenceLength = \strlen($version);
         $secondDot = false;
 
-        if ($firstDot >= 0 && $firstDot < $referenceLength) {
+        if ($firstDot !== false && $firstDot < $referenceLength) {
             $secondDot = \strpos($version, '.', $firstDot + 1);
         }
 

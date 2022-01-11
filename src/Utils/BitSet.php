@@ -8,7 +8,7 @@ use Antlr\Antlr4\Runtime\Comparison\Hasher;
 
 final class BitSet
 {
-    /** @var array<mixed> */
+    /** @var array<int, bool> */
     private $data = [];
 
     public function add(int $value) : void
@@ -32,7 +32,7 @@ final class BitSet
     }
 
     /**
-     * @return array<mixed>
+     * @return list<int>
      */
     public function values() : array
     {
@@ -40,11 +40,15 @@ final class BitSet
     }
 
     /**
-     * @return mixed
+     * @return int|null
      */
     public function minValue()
     {
-        return \min($this->values());
+        $values = $this->values();
+        if (\count($values) === 0) {
+            return null;
+        }
+        return \min($values);
     }
 
     public function hashCode() : int

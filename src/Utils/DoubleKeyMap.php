@@ -4,12 +4,17 @@ declare(strict_types=1);
 
 namespace Antlr\Antlr4\Runtime\Utils;
 
+/**
+ * @template TPKey of \Antlr\Antlr4\Runtime\Comparison\Hashable
+ * @template TSKey of \Antlr\Antlr4\Runtime\Comparison\Hashable
+ * @template TValue
+ */
 final class DoubleKeyMap
 {
     /**
      * Map<primaryKey, Map<secondaryKey, value>>
      *
-     * @var Map
+     * @var Map<TPKey, Map<TSKey, TValue>>
      */
     private $data;
 
@@ -19,15 +24,16 @@ final class DoubleKeyMap
     }
 
     /**
-     * @param mixed $primaryKey
-     * @param mixed $secondaryKey
-     * @param mixed $value
+     * @param TPKey  $primaryKey
+     * @param TSKey  $secondaryKey
+     * @param TValue $value
      */
     public function set($primaryKey, $secondaryKey, $value) : void
     {
         $secondaryData = $this->data->get($primaryKey);
 
         if ($secondaryData === null) {
+            /** @var Map<TSKey, TValue> $secondaryData */
             $secondaryData = new Map();
 
             $this->data->put($primaryKey, $secondaryData);
@@ -37,10 +43,10 @@ final class DoubleKeyMap
     }
 
     /**
-     * @param mixed $primaryKey
-     * @param mixed $secondaryKey
+     * @param TPKey $primaryKey
+     * @param TSKey $secondaryKey
      *
-     * @return mixed
+     * @return TValue|null
      */
     public function getByTwoKeys($primaryKey, $secondaryKey)
     {
@@ -54,17 +60,19 @@ final class DoubleKeyMap
     }
 
     /**
-     * @param mixed $primaryKey
+     * @param TPKey $primaryKey
+     *
+     * @return Map<TSKey, TValue>|null
      */
-    public function getByOneKey($primaryKey) : Map
+    public function getByOneKey($primaryKey) : ?Map
     {
         return $this->data->get($primaryKey);
     }
 
     /**
-     * @param mixed $primaryKey
+     * @param TPKey $primaryKey
      *
-     * @return array<mixed>|null
+     * @return list<TValue>|null
      */
     public function values($primaryKey) : ?array
     {
@@ -78,7 +86,7 @@ final class DoubleKeyMap
     }
 
     /**
-     * @return array<mixed>
+     * @return list<TPKey>
      */
     public function primaryKeys() : array
     {
@@ -86,9 +94,9 @@ final class DoubleKeyMap
     }
 
     /**
-     * @param mixed $primaryKey
+     * @param TPKey $primaryKey
      *
-     * @return array<mixed>|null
+     * @return list<TSKey>|null
      */
     public function secondaryKeys($primaryKey) : ?array
     {

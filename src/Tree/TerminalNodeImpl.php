@@ -65,6 +65,9 @@ class TerminalNodeImpl implements TerminalNode
         return 0;
     }
 
+    /**
+     * @return mixed
+     */
     public function accept(ParseTreeVisitor $visitor)
     {
         return $visitor->visitTerminal($this);

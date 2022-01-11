@@ -12,6 +12,6 @@ final class OrderedATNConfigSet extends ATNConfigSet
     {
         parent::__construct();
 
-        $this->configLookup = new Set();
+        $this->configLookup = new Set(); // @phpstan-ignore-line
     }
 }

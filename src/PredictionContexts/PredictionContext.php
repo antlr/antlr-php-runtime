@@ -10,6 +10,9 @@ use Antlr\Antlr4\Runtime\Comparison\Hashable;
 use Antlr\Antlr4\Runtime\RuleContext;
 use Antlr\Antlr4\Runtime\Utils\DoubleKeyMap;
 
+/**
+ * @phpstan-type MergeCacheKey SingletonPredictionContext|ArrayPredictionContext
+ */
 abstract class PredictionContext implements Hashable
 {
     /** @var int */
@@ -60,7 +63,7 @@ abstract class PredictionContext implements Hashable
         static $empty;
 
         if ($empty === null) {
-            static::$globalNodeCount--;
+            self::$globalNodeCount--;
             $empty = new EmptyPredictionContext();
             $empty->id = 0;
         }
@@ -125,6 +128,9 @@ abstract class PredictionContext implements Hashable
     abstract public function getReturnState(int $index) : int;
     abstract public function __toString() : string;
 
+    /**
+     * @param DoubleKeyMap<MergeCacheKey, MergeCacheKey, PredictionContext>|null $mergeCache
+     */
     public static function merge(
         PredictionContext $a,
         PredictionContext $b,
@@ -185,10 +191,11 @@ abstract class PredictionContext implements Hashable
      * the root where each element points to the corresponding original
      * parent.
      *
-     * @param SingletonPredictionContext $a              The first {@see SingletonPredictionContext}
-     * @param SingletonPredictionContext $b              The second {@see SingletonPredictionContext}
-     * @param bool                       $rootIsWildcard `true` if this is a local-context merge,
-     *                                                   otherwise false to indicate a full-context merge
+     * @param SingletonPredictionContext                                         $a              The first {@see SingletonPredictionContext}
+     * @param SingletonPredictionContext                                         $b              The second {@see SingletonPredictionContext}
+     * @param bool                                                               $rootIsWildcard `true` if this is a local-context merge,
+     *                                                                                           otherwise false to indicate a full-context merge
+     * @param DoubleKeyMap<MergeCacheKey, MergeCacheKey, PredictionContext>|null $mergeCache
      */
     public static function mergeSingletons(
         SingletonPredictionContext $a,
@@ -399,6 +406,8 @@ abstract class PredictionContext implements Hashable
      * {@see SingletonPredictionContext}.
      *
      * [[img src="images/ArrayMerge_EqualTop.svg" type="image/svg+xml"]]
+     *
+     * @param DoubleKeyMap<MergeCacheKey, MergeCacheKey, PredictionContext>|null $mergeCache
      */
     public static function mergeArrays(
         ArrayPredictionContext $a,

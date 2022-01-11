@@ -21,6 +21,7 @@ final class OrOperator extends Operator
 
     public function __construct(SemanticContext $a, SemanticContext $b)
     {
+        /** @var Set<SemanticContext> $operands */
         $operands = new Set();
 
         if ($a instanceof self) {
