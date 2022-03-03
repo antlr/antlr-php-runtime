@@ -46,38 +46,7 @@ use Antlr\Antlr4\Runtime\Utils\StringUtils;
 
 final class ATNDeserializer
 {
-    /**
-     * This value should never change. Updates following this version are
-     * reflected as change in the unique ID SERIALIZED_UUID.
-     */
-    public const SERIALIZED_VERSION = 3;
-
-    /**
-     * This is the earliest supported serialized UUID.
-     * Stick to serialized version for now, we don't need a UUID instance.
-     */
-    private const BASE_SERIALIZED_UUID = 'AADB8D7E-AEEF-4415-AD2B-8204D6CF042E';
-
-    /**
-     * This UUID indicates the serialized ATN contains two sets of IntervalSets,
-     * where the second set's values are encoded as 32-bit integers to support
-     * the full Unicode SMP range up to U+10FFFF.
-     */
-    private const ADDED_UNICODE_SMP = '59627784-3BE5-417A-B9EB-8131A7286089';
-
-    /**
-     * This list contains all of the currently supported UUIDs, ordered by when
-     * the feature first appeared in this branch.
-     */
-    private const SUPPORTED_UUIDS = [
-        self::BASE_SERIALIZED_UUID,
-        self::ADDED_UNICODE_SMP,
-    ];
-
-    /**
-     * This is the current serialized UUID.
-     */
-    private const SERIALIZED_UUID = self::ADDED_UNICODE_SMP;
+    public const SERIALIZED_VERSION = 4;
 
     /** @var ATNDeserializationOptions */
     private $deserializationOptions;
@@ -87,47 +56,22 @@ final class ATNDeserializer
 
     /** @var int */
     private $pos = 0;
+  
+    /** @var array<int, callable|null>|null */
+    private $stateFactories;
 
-    /** @var string */
-    private $uuid = '';
+    /** @var array<int, callable|null>|null */
+    private $actionFactories;
 
     public function __construct(?ATNDeserializationOptions $options = null)
     {
         $this->deserializationOptions = $options ?? ATNDeserializationOptions::defaultOptions();
     }
 
-    /**
-     * Determines if a particular serialized representation of an ATN supports
-     * a particular feature, identified by the {@see UUID} used for serializing
-     * the ATN at the time the feature was first introduced.
-     *
-     * @param string $feature    The {@see UUID} marking the first time the
-     *                           feature was supported in the serialized ATN.
-     * @param string $actualUuid The {@see UUID} of the actual serialized ATN
-     *                           which is currently being deserialized.
-     *
-     * @return bool `true` if the `actualUuid` value represents a serialized
-     *              ATN at or after the feature identified by `feature` was
-     *              introduced; otherwise, `false`.
-     */
-    protected function isFeatureSupported(string $feature, string $actualUuid) : bool
-    {
-        $featureIndex = \array_search($feature, self::SUPPORTED_UUIDS, true);
-
-        if ($featureIndex === false) {
-            return false;
-        }
-
-        $actualUuidIndex = \array_search($actualUuid, self::SUPPORTED_UUIDS, true);
-
-        return $actualUuidIndex >= $featureIndex;
-    }
-
     public function deserialize(string $data) : ATN
     {
         $this->reset($data);
         $this->checkVersion();
-        $this->checkUUID();
         $atn = $this->readATN();
         $this->readStates($atn);
         $this->readRules($atn);
@@ -139,14 +83,10 @@ final class ATNDeserializer
             return $this->readInt();
         });
 
-        // Next, if the ATN was serialized with the Unicode SMP feature,
-        // deserialize sets with 32-bit arguments <= U+10FFFF.
-
-        if ($this->isFeatureSupported(self::ADDED_UNICODE_SMP, $this->uuid)) {
-            $this->readSets($sets, function () {
-                return $this->readInt32();
-            });
-        }
+        // Next, deserialize sets with 32-bit arguments <= U+10FFFF.
+        $this->readSets($sets, function () {
+            return $this->readInt32();
+        });
 
         $this->readEdges($atn, $sets);
         $this->readDecisions($atn);
@@ -172,10 +112,8 @@ final class ATNDeserializer
             return;
         }
 
-        $this->data = [StringUtils::codePoint($characters[0])];
-        for ($i = 1, $length = \count($characters); $i < $length; $i++) {
-            $code = StringUtils::codePoint($characters[$i]);
-            $this->data[] = $code > 1  ? $code - 2 : $code + 65533;
+        for ($i = 0, $length = \count($characters); $i < $length; $i++) {
+            $this->data[] = StringUtils::codePoint($characters[$i]);
         }
 
         $this->pos = 0;
@@ -193,21 +131,6 @@ final class ATNDeserializer
                 self::SERIALIZED_VERSION
             ));
         }
-    }
-
-    private function checkUUID() : void
-    {
-        $uuid = $this->readUUID();
-
-        if (!\in_array($uuid, self::SUPPORTED_UUIDS, true)) {
-            throw new \InvalidArgumentException(\sprintf(
-                'Could not deserialize ATN with UUID: %s (expected %s or a legacy UUID).',
-                $uuid,
-                self::SERIALIZED_UUID
-            ));
-        }
-
-        $this->uuid = $uuid;
     }
 
     private function readATN() : ATN
@@ -731,21 +654,6 @@ final class ATNDeserializer
         $high = $this->readInt();
 
         return $low | ($high << 16);
-    }
-
-    private function readUUID() : string
-    {
-        $bb = [];
-        for ($i=0; $i < 8; $i++) {
-            $int = $this->readInt();
-            $bb[] = $int & 0xFF;
-            $bb[] = ($int >> 8) & 0xFF;
-        }
-
-        $bb = \array_reverse($bb);
-        $hex = \strtoupper(\bin2hex(\implode(\array_map('chr', $bb))));
-
-        return \vsprintf('%s%s-%s-%s-%s-%s%s%s', \str_split($hex, 4));
     }
 
     /**
