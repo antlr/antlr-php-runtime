@@ -68,9 +68,14 @@ final class ATNDeserializer
         $this->deserializationOptions = $options ?? ATNDeserializationOptions::defaultOptions();
     }
 
-    public function deserialize(string $data) : ATN
+    /**
+     * @param array<int> $data
+     */
+    public function deserialize(array $data) : ATN
     {
-        $this->reset($data);
+        $this->data = $data;
+        $this->pos = 0;
+
         $this->checkVersion();
         $atn = $this->readATN();
         $this->readStates($atn);
@@ -103,22 +108,6 @@ final class ATNDeserializer
 
         return $atn;
     }
-
-    private function reset(string $data) : void
-    {
-        $characters = \preg_split('//u', $data, -1, \PREG_SPLIT_NO_EMPTY);
-
-        if ($characters === false) {
-            return;
-        }
-
-        for ($i = 0, $length = \count($characters); $i < $length; $i++) {
-            $this->data[] = StringUtils::codePoint($characters[$i]);
-        }
-
-        $this->pos = 0;
-    }
-
 
     private function checkVersion() : void
     {
