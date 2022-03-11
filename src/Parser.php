@@ -32,10 +32,8 @@ abstract class Parser extends Recognizer
      * {@see ATN} with bypass alternatives.
      *
      * @see ATNDeserializationOptions::isGenerateRuleBypassTransitions()
-     *
-     * @var array<string, ATN>
      */
-    private static $bypassAltsAtnCache = [];
+    private static ?ATN $bypassAltsAtnCache = null;
 
     /**
      * The error handling strategy for the parser. The default value is a new
@@ -394,17 +392,14 @@ abstract class Parser extends Recognizer
      */
     public function getATNWithBypassAlts() : ATN
     {
-        $serializedAtn = $this->getSerializedATN();
-        $result = self::$bypassAltsAtnCache[$serializedAtn] ?? null;
-
-        if ($result === null) {
+        if (self::$bypassAltsAtnCache === null) {
             $deserializationOptions = new ATNDeserializationOptions();
             $deserializationOptions->setGenerateRuleBypassTransitions(true);
-            $result = (new ATNDeserializer($deserializationOptions))->deserialize($serializedAtn);
-            self::$bypassAltsAtnCache[$serializedAtn] = $result;
+            self::$bypassAltsAtnCache = (new ATNDeserializer($deserializationOptions))
+                ->deserialize($this->getSerializedATN());
         }
 
-        return $result;
+        return self::$bypassAltsAtnCache;
     }
 
     public function getErrorHandler() : ANTLRErrorStrategy

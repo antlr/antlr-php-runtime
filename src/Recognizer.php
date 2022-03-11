@@ -113,8 +113,10 @@ abstract class Recognizer
      * If this recognizer was generated, it will have a serialized ATN
      * representation of the grammar. For interpreters, we don't know
      * their serialized ATN despite having created the interpreter from it.
+     *
+     * @return array<int>
      */
-    public function getSerializedATN() : string
+    public function getSerializedATN() : array
     {
         throw new \InvalidArgumentException('there is no serialized ATN');
     }
