@@ -35,10 +35,8 @@ class DiagnosticErrorListener extends BaseErrorListener
 {
     /**
      * When `true`, only exactly known ambiguities are reported.
-     *
-     * @var bool
      */
-    protected $exactOnly;
+    protected bool $exactOnly;
 
     public function __construct(bool $exactOnly = true)
     {
@@ -52,8 +50,8 @@ class DiagnosticErrorListener extends BaseErrorListener
         int $stopIndex,
         bool $exact,
         ?BitSet $ambigAlts,
-        ATNConfigSet $configs
-    ) : void {
+        ATNConfigSet $configs,
+    ): void {
         if ($this->exactOnly && !$exact) {
             return;
         }
@@ -64,7 +62,7 @@ class DiagnosticErrorListener extends BaseErrorListener
             'reportAmbiguity d=%s: ambigAlts=%s, input=\'%s\'',
             $this->getDecisionDescription($recognizer, $dfa),
             $this->getConflictingAlts($ambigAlts, $configs),
-            $tokenStream === null ? '' : $tokenStream->getTextByInterval(new Interval($startIndex, $stopIndex))
+            $tokenStream === null ? '' : $tokenStream->getTextByInterval(new Interval($startIndex, $stopIndex)),
         );
 
         $recognizer->notifyErrorListeners($msg);
@@ -76,14 +74,14 @@ class DiagnosticErrorListener extends BaseErrorListener
         int $startIndex,
         int $stopIndex,
         ?BitSet $conflictingAlts,
-        ATNConfigSet $configs
-    ) : void {
+        ATNConfigSet $configs,
+    ): void {
         $tokenStream = $recognizer->getTokenStream();
 
         $msg = \sprintf(
             'reportAttemptingFullContext d=%s, input=\'%s\'',
             $this->getDecisionDescription($recognizer, $dfa),
-            $tokenStream === null ? '' : $tokenStream->getTextByInterval(new Interval($startIndex, $stopIndex))
+            $tokenStream === null ? '' : $tokenStream->getTextByInterval(new Interval($startIndex, $stopIndex)),
         );
 
         $recognizer->notifyErrorListeners($msg);
@@ -95,27 +93,22 @@ class DiagnosticErrorListener extends BaseErrorListener
         int $startIndex,
         int $stopIndex,
         int $prediction,
-        ATNConfigSet $configs
-    ) : void {
+        ATNConfigSet $configs,
+    ): void {
         $tokenStream = $recognizer->getTokenStream();
 
         $msg = \sprintf(
             'reportContextSensitivity d=%s, input=\'%s\'',
             $this->getDecisionDescription($recognizer, $dfa),
-            $tokenStream === null ? '' : $tokenStream->getTextByInterval(new Interval($startIndex, $stopIndex))
+            $tokenStream === null ? '' : $tokenStream->getTextByInterval(new Interval($startIndex, $stopIndex)),
         );
 
         $recognizer->notifyErrorListeners($msg);
     }
 
-    protected function getDecisionDescription(Parser $recognizer, DFA $dfa) : string
+    protected function getDecisionDescription(Parser $recognizer, DFA $dfa): string
     {
         $decision = $dfa->decision;
-
-        if ($dfa->atnStartState === null) {
-            throw new \RuntimeException('Unexpected null ATN Start State.');
-        }
-
         $ruleIndex = $dfa->atnStartState->ruleIndex;
 
         $ruleNames = $recognizer->getRuleNames();
@@ -146,7 +139,7 @@ class DiagnosticErrorListener extends BaseErrorListener
      * @return BitSet `reportedAlts` if it is not `null`, otherwise returns
      *                the set of alternatives represented in `configs`.
      */
-    protected function getConflictingAlts(?BitSet $reportedAlts, ATNConfigSet $configs) : BitSet
+    protected function getConflictingAlts(?BitSet $reportedAlts, ATNConfigSet $configs): BitSet
     {
         if ($reportedAlts !== null) {
             return $reportedAlts;

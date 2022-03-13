@@ -25,16 +25,14 @@ use Antlr\Antlr4\Runtime\Lexer;
 final class LexerActionExecutor implements Equatable
 {
     /** @var array<LexerAction> */
-    private $lexerActions;
+    private array $lexerActions;
 
     /**
      * Caches the result of {@see LexerActionExecutor::hashCode()} since
      * the hash code is an element of the performance-critical
      * {@see LexerATNConfig::hashCode()} operation.
-     *
-     * @var int|null
      */
-    private $cachedHashCode;
+    private ?int $cachedHashCode = null;
 
     /**
      * @param array<LexerAction> $lexerActions
@@ -67,8 +65,8 @@ final class LexerActionExecutor implements Equatable
      */
     public static function append(
         ?LexerActionExecutor $lexerActionExecutor,
-        LexerAction $lexerAction
-    ) : self {
+        LexerAction $lexerAction,
+    ): self {
         if ($lexerActionExecutor === null) {
             return new LexerActionExecutor([$lexerAction]);
         }
@@ -107,7 +105,7 @@ final class LexerActionExecutor implements Equatable
      * @return self A {@see LexerActionExecutor} which stores input stream offsets
      *              for all position-dependent lexer actions.
      */
-    public function fixOffsetBeforeMatch(int $offset) : self
+    public function fixOffsetBeforeMatch(int $offset): self
     {
         $updatedLexerActions = null;
 
@@ -134,7 +132,7 @@ final class LexerActionExecutor implements Equatable
      *
      * @return array<LexerAction> The lexer actions to be executed by this executor.
      */
-    public function getLexerActions() : array
+    public function getLexerActions(): array
     {
         return $this->lexerActions;
     }
@@ -161,7 +159,7 @@ final class LexerActionExecutor implements Equatable
      *                               the `input` position to the beginning
      *                               of the token.
      */
-    public function execute(Lexer $lexer, CharStream $input, int $startIndex) : void
+    public function execute(Lexer $lexer, CharStream $input, int $startIndex): void
     {
         $requiresSeek = false;
         $stopIndex = $input->getIndex();
@@ -187,7 +185,7 @@ final class LexerActionExecutor implements Equatable
         }
     }
 
-    public function hashCode() : int
+    public function hashCode(): int
     {
         if ($this->cachedHashCode === null) {
             $this->cachedHashCode = Hasher::hash($this->lexerActions);
@@ -196,7 +194,7 @@ final class LexerActionExecutor implements Equatable
         return $this->cachedHashCode;
     }
 
-    public function equals(object $other) : bool
+    public function equals(object $other): bool
     {
         if ($this === $other) {
             return true;
@@ -207,8 +205,11 @@ final class LexerActionExecutor implements Equatable
             && Equality::equals($this->lexerActions, $other->lexerActions);
     }
 
-    public function __toString() : string
+    public function __toString(): string
     {
-        return \sprintf('LexerActionExecutor[%s]', \implode(', ', $this->lexerActions));
+        return \sprintf(
+            'LexerActionExecutor[%s]',
+            \implode(', ', \array_map('\strval', $this->lexerActions)),
+        );
     }
 }

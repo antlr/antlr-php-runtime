@@ -6,5 +6,5 @@ namespace Antlr\Antlr4\Runtime\Comparison;
 
 interface Hashable extends Equatable
 {
-    public function hashCode() : int;
+    public function hashCode(): int;
 }

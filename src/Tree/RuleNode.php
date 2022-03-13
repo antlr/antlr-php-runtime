@@ -8,5 +8,5 @@ use Antlr\Antlr4\Runtime\RuleContext;
 
 interface RuleNode extends ParseTree
 {
-    public function getRuleContext() : RuleContext;
+    public function getRuleContext(): RuleContext;
 }

@@ -22,34 +22,27 @@ class RecognitionException extends \RuntimeException
 {
     /**
      * The {@see Recognizer} where this exception originated.
-     *
-     * @var Recognizer|null
      */
-    private $recognizer;
+    private ?Recognizer $recognizer = null;
 
-    /** @var RuleContext|null */
-    private $ctx;
+    private ?RuleContext $ctx = null;
 
-    /** @var IntStream|null */
-    private $input;
+    private ?IntStream $input = null;
 
     /**
      * The current {@see Token} when an error occurred. Since not all streams
      * support accessing symbols by index, we have to track the {@see Token}
      * instance itself.
-     *
-     * @var Token|null
      */
-    private $offendingToken;
+    private ?Token $offendingToken = null;
 
-    /** @var int */
-    private $offendingState = -1;
+    private int $offendingState = -1;
 
     public function __construct(
         ?Recognizer $recognizer,
         ?IntStream $input,
         ?ParserRuleContext $ctx,
-        string $message = ''
+        string $message = '',
     ) {
         parent::__construct($message);
 
@@ -71,12 +64,12 @@ class RecognitionException extends \RuntimeException
      *
      * If the state number is not known, this method returns -1.
      */
-    public function getOffendingState() : int
+    public function getOffendingState(): int
     {
         return $this->offendingState;
     }
 
-    public function setOffendingState(int $offendingState) : void
+    public function setOffendingState(int $offendingState): void
     {
         $this->offendingState = $offendingState;
     }
@@ -94,14 +87,14 @@ class RecognitionException extends \RuntimeException
      *                          the current state in the ATN, or `null` if
      *                          the information is not available.
      */
-    public function getExpectedTokens() : ?IntervalSet
+    public function getExpectedTokens(): ?IntervalSet
     {
         if ($this->recognizer === null) {
             return null;
         }
 
         if ($this->ctx === null) {
-            throw new \RuntimeException('Unexpected null context.');
+            throw new \LogicException('Unexpected null context.');
         }
 
         return $this->recognizer->getATN()->getExpectedTokens($this->offendingState, $this->ctx);
@@ -116,7 +109,7 @@ class RecognitionException extends \RuntimeException
      *                          was thrown. If the context is not available, this
      *                          method returns `null`.
      */
-    public function getCtx() : ?RuleContext
+    public function getCtx(): ?RuleContext
     {
         return $this->ctx;
     }
@@ -131,17 +124,17 @@ class RecognitionException extends \RuntimeException
      *                        the recognizer where this exception was thrown, or
      *                        `null` if the stream is not available.
      */
-    public function getInputStream() : ?IntStream
+    public function getInputStream(): ?IntStream
     {
         return $this->input;
     }
 
-    public function getOffendingToken() : ?Token
+    public function getOffendingToken(): ?Token
     {
         return $this->offendingToken;
     }
 
-    public function setOffendingToken(?Token $offendingToken) : void
+    public function setOffendingToken(?Token $offendingToken): void
     {
         $this->offendingToken = $offendingToken;
     }
@@ -154,12 +147,12 @@ class RecognitionException extends \RuntimeException
      * @return Recognizer|null The recognizer where this exception occurred, or
      *                         `null` if the recognizer is not available.
      */
-    public function getRecognizer() : ?Recognizer
+    public function getRecognizer(): ?Recognizer
     {
         return $this->recognizer;
     }
 
-    public function __toString() : string
+    public function __toString(): string
     {
         return $this->message;
     }

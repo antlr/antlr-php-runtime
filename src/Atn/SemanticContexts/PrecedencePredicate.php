@@ -10,20 +10,19 @@ use Antlr\Antlr4\Runtime\RuleContext;
 
 final class PrecedencePredicate extends SemanticContext
 {
-    /** @var int */
-    public $precedence;
+    public int $precedence;
 
     public function __construct(int $precedence = 0)
     {
         $this->precedence = $precedence;
     }
 
-    public function eval(Recognizer $parser, RuleContext $parserCallStack) : bool
+    public function eval(Recognizer $parser, RuleContext $parserCallStack): bool
     {
         return $parser->precpred($parserCallStack, $this->precedence);
     }
 
-    public function evalPrecedence(Recognizer $parser, RuleContext $parserCallStack) : ?SemanticContext
+    public function evalPrecedence(Recognizer $parser, RuleContext $parserCallStack): ?SemanticContext
     {
         if ($parser->precpred($parserCallStack, $this->precedence)) {
             return SemanticContext::none();
@@ -32,12 +31,17 @@ final class PrecedencePredicate extends SemanticContext
         return null;
     }
 
-    public function hashCode() : int
+    public function hashCode(): int
     {
         return Hasher::hash(31, $this->precedence);
     }
 
-    public function equals(object $other) : bool
+    public function compareTo(PrecedencePredicate $other): int
+    {
+        return $this->precedence - $other->precedence;
+    }
+
+    public function equals(object $other): bool
     {
         if ($this === $other) {
             return true;
@@ -50,7 +54,7 @@ final class PrecedencePredicate extends SemanticContext
         return $this->precedence === $other->precedence;
     }
 
-    public function __toString() : string
+    public function __toString(): string
     {
         return \sprintf('{%d>=prec}?', $this->precedence);
     }

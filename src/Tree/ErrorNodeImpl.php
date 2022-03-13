@@ -13,10 +13,7 @@ namespace Antlr\Antlr4\Runtime\Tree;
  */
 class ErrorNodeImpl extends TerminalNodeImpl implements ErrorNode
 {
-    /**
-     * @return mixed
-     */
-    public function accept(ParseTreeVisitor $visitor)
+    public function accept(ParseTreeVisitor $visitor): mixed
     {
         return $visitor->visitErrorNode($this);
     }

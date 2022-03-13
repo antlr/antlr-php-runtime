@@ -1,23 +1,30 @@
 {
   "name": "antlr/antlr4-php-runtime",
-  "type": "library",
-  "description": "PHP 7 and 8.0 runtime for ANTLR 4",
-  "keywords": ["antlr4", "php", "runtime"],
+  "description": "PHP 8.0+ runtime for ANTLR 4",
   "license": [
     "BSD-3-Clause"
   ],
-  "minimum-stability": "dev",
-  "prefer-stable": true,
+  "type": "library",
+  "keywords": [
+    "antlr4",
+    "php",
+    "runtime"
+  ],
   "require": {
-    "php": "^7.4 || ^8.0",
+    "php": "^8.0",
     "ext-mbstring": "*"
   },
   "require-dev": {
-    "phpstan/phpstan": "^0.11.4",
-    "slevomat/coding-standard": "^5.0.4",
-    "squizlabs/php_codesniffer": "^3.4.1",
-    "phpstan/extension-installer": "^1.0"
+    "ergebnis/composer-normalize": "^2.15",
+    "phpstan/extension-installer": "^1.0",
+    "phpstan/phpstan": "^1.4",
+    "phpstan/phpstan-deprecation-rules": "^1.0",
+    "phpstan/phpstan-strict-rules": "^1.1",
+    "slevomat/coding-standard": "^7.0",
+    "squizlabs/php_codesniffer": "^3.6"
   },
+  "minimum-stability": "dev",
+  "prefer-stable": true,
   "autoload": {
     "psr-4": {
       "Antlr\\Antlr4\\Runtime\\": "src/"
@@ -28,9 +35,25 @@
       "Antlr\\Antlr4\\Runtime\\Tests\\": "tests/"
     }
   },
+  "config": {
+    "allow-plugins": {
+      "phpstan/extension-installer": true,
+      "dealerdirect/phpcodesniffer-composer-installer": true,
+      "ergebnis/composer-normalize": true
+    }
+  },
   "extra": {
     "branch-alias": {
       "dev-master": "0.2-dev"
     }
+  },
+  "scripts": {
+    "test": [
+      "composer validate",
+      "composer normalize --dry-run",
+      "mkdir -p .cache",
+      "phpcs",
+      "phpstan analyse"
+    ]
   }
 }

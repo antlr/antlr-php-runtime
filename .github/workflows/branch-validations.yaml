@@ -1,0 +1,128 @@
+name: Validations
+
+on:
+  push:
+    tags-ignore:
+      - '**'
+    branches:
+      - master
+  pull_request:
+    types:
+      - synchronize
+      - opened
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: symfonycorp/security-checker-action@v2
+
+  composer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          tools: composer:v2
+      - name: Composer cache
+        uses: actions/cache@v2
+        with:
+          key: composer-${{ hashFiles('**/composer.lock') }}
+          path: ${{ github.workspace }}/.cache
+      - name: Vendor cache
+        uses: actions/cache@v2
+        with:
+          key: vendor-${{ hashFiles('**/composer.lock') }}
+          path: ${{ github.workspace }}/vendor
+      - name: Tools cache
+        uses: actions/cache@v2
+        with:
+          key: tools
+          path: ${{ github.workspace }}/.cache
+
+      - name: Install dependencies
+        env:
+          COMPOSER_CACHE_DIR: ${{ github.workspace }}/.cache
+        run: |-
+          composer install --no-progress --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Validate composer
+        env:
+          COMPOSER_CACHE_DIR: ${{ github.workspace }}/.cache
+        run: composer validate
+
+      - name: Normalize composer
+        env:
+          COMPOSER_CACHE_DIR: ${{ github.workspace }}/.cache
+        run: composer normalize --dry-run
+
+  phpstan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          tools: composer:v2
+      - name: Composer cache
+        uses: actions/cache@v2
+        with:
+          key: composer-${{ hashFiles('**/composer.lock') }}
+          path: ${{ github.workspace }}/.cache
+      - name: Vendor cache
+        uses: actions/cache@v2
+        with:
+          key: vendor-${{ hashFiles('**/composer.lock') }}
+          path: ${{ github.workspace }}/vendor
+      - name: Tools cache
+        uses: actions/cache@v2
+        with:
+          key: tools
+          path: ${{ github.workspace }}/.cache
+
+      - name: Install dependencies
+        env:
+          COMPOSER_CACHE_DIR: ${{ github.workspace }}/.cache
+        run: |-
+          composer install --no-progress --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: phpstan
+        run: ./vendor/bin/phpstan analyse -l max --memory-limit=1G
+
+  phpcs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          tools: composer:v2
+      - name: Composer cache
+        uses: actions/cache@v2
+        with:
+          key: composer-${{ hashFiles('**/composer.lock') }}
+          path: ${{ github.workspace }}/.cache
+      - name: Vendor cache
+        uses: actions/cache@v2
+        with:
+          key: vendor-${{ hashFiles('**/composer.lock') }}
+          path: ${{ github.workspace }}/vendor
+      - name: Tools cache
+        uses: actions/cache@v2
+        with:
+          key: tools
+          path: ${{ github.workspace }}/.cache
+
+      - name: Install dependencies
+        env:
+          COMPOSER_CACHE_DIR: ${{ github.workspace }}/.cache
+        run: |-
+          composer install --no-progress --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: phpcs
+        run: ./vendor/bin/phpcs -d memory_limit=1G

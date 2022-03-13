@@ -6,6 +6,5 @@ namespace Antlr\Antlr4\Runtime\Atn\States;
 
 abstract class BlockStartState extends DecisionState
 {
-    /** @var BlockEndState|null */
-    public $endState;
+    public ?BlockEndState $endState = null;
 }

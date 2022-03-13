@@ -23,18 +23,14 @@ class NoViableAltException extends RecognitionException
      * not be buffering tokens so get a reference to it. (At the
      * time the error occurred, of course the stream needs to keep a
      * buffer all of the tokens but later we might not have access to those.)
-     *
-     * @var Token|null
      */
-    private $startToken;
+    private ?Token $startToken = null;
 
     /**
      * Which configurations did we try at $input->index() that couldn't
      * match $input->LT(1)?
-     *
-     * @var ATNConfigSet|null
      */
-    private $deadEndConfigs;
+    private ?ATNConfigSet $deadEndConfigs = null;
 
     public function __construct(
         Parser $recognizer,
@@ -42,7 +38,7 @@ class NoViableAltException extends RecognitionException
         ?Token $startToken = null,
         ?Token $offendingToken = null,
         ?ATNConfigSet $deadEndConfigs = null,
-        ?ParserRuleContext $ctx = null
+        ?ParserRuleContext $ctx = null,
     ) {
         if ($ctx === null) {
             $ctx = $recognizer->getContext();
@@ -67,12 +63,12 @@ class NoViableAltException extends RecognitionException
         $this->setOffendingToken($offendingToken);
     }
 
-    public function getStartToken() : ?Token
+    public function getStartToken(): ?Token
     {
         return $this->startToken;
     }
 
-    public function getDeadEndConfigs() : ?ATNConfigSet
+    public function getDeadEndConfigs(): ?ATNConfigSet
     {
         return $this->deadEndConfigs;
     }

@@ -8,18 +8,14 @@ use Antlr\Antlr4\Runtime\Atn\States\ATNState;
 
 final class ActionTransition extends Transition
 {
-    /** @var int */
-    public $ruleIndex;
+    public int $ruleIndex;
 
-    /** @var int */
-    public $actionIndex;
+    public int $actionIndex;
 
     /**
      * e.g. $i ref in action
-     *
-     * @var bool
      */
-    public $isCtxDependent;
+    public bool $isCtxDependent;
 
     public function __construct(ATNState $target, int $ruleIndex, int $actionIndex = -1, bool $isCtxDependent = false)
     {
@@ -30,7 +26,7 @@ final class ActionTransition extends Transition
         $this->isCtxDependent = $isCtxDependent;
     }
 
-    public function matches(int $symbol, int $minVocabSymbol, int $maxVocabSymbol) : bool
+    public function matches(int $symbol, int $minVocabSymbol, int $maxVocabSymbol): bool
     {
         return false;
     }
@@ -38,17 +34,17 @@ final class ActionTransition extends Transition
     /**
      * {@inheritdoc}
      */
-    public function isEpsilon() : bool
+    public function isEpsilon(): bool
     {
         return true;
     }
 
-    public function getSerializationType() : int
+    public function getSerializationType(): int
     {
         return self::ACTION;
     }
 
-    public function equals(object $other) : bool
+    public function equals(object $other): bool
     {
         if ($this === $other) {
             return true;
@@ -64,7 +60,7 @@ final class ActionTransition extends Transition
             && $this->target->equals($other->target);
     }
 
-    public function __toString() : string
+    public function __toString(): string
     {
         return \sprintf('action_%d:%d', $this->ruleIndex, $this->actionIndex);
     }

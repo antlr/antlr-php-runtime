@@ -9,8 +9,7 @@ use Antlr\Antlr4\Runtime\IntervalSet;
 
 final class AtomTransition extends Transition
 {
-    /** @var int */
-    public $label;
+    public int $label;
 
     public function __construct(ATNState $target, int $label)
     {
@@ -19,22 +18,22 @@ final class AtomTransition extends Transition
         $this->label = $label;
     }
 
-    public function label() : ?IntervalSet
+    public function label(): ?IntervalSet
     {
         return IntervalSet::fromInt($this->label);
     }
 
-    public function matches(int $symbol, int $minVocabSymbol, int $maxVocabSymbol) : bool
+    public function matches(int $symbol, int $minVocabSymbol, int $maxVocabSymbol): bool
     {
         return $this->label === $symbol;
     }
 
-    public function getSerializationType() : int
+    public function getSerializationType(): int
     {
         return self::ATOM;
     }
 
-    public function equals(object $other) : bool
+    public function equals(object $other): bool
     {
         if ($this === $other) {
             return true;
@@ -45,7 +44,7 @@ final class AtomTransition extends Transition
             && $this->target->equals($other->target);
     }
 
-    public function __toString() : string
+    public function __toString(): string
     {
         return (string) $this->label;
     }

@@ -6,5 +6,5 @@ namespace Antlr\Antlr4\Runtime\Tree;
 
 interface ErrorNode extends TerminalNode
 {
-    public function __toString() : string;
+    public function __toString(): string;
 }

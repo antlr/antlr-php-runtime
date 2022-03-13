@@ -29,26 +29,20 @@ class ATNConfig implements Hashable
 
     /**
      * The ATN state associated with this configuration.
-     *
-     * @var ATNState
      */
-    public $state;
+    public ATNState $state;
 
     /**
      * What alt (or lexer rule) is predicted by this configuration.
-     *
-     * @var int
      */
-    public $alt;
+    public int $alt;
 
     /**
      * The stack of invoking states leading to the rule/states associated
      * with this config. We track only those contexts pushed during
      * execution of the ATN simulator.
-     *
-     * @var PredictionContext|null
      */
-    public $context;
+    public ?PredictionContext $context = null;
 
     /**
      * We cannot execute predicates dependent upon local context unless
@@ -69,24 +63,21 @@ class ATNConfig implements Hashable
      * flag. It also ensures the performance of the existing {@see ATNConfig}
      * constructors as well as certain operations like
      * {@see ATNConfigSet::add()} method are completely unaffected by the change.
-     *
-     * @var int
      */
-    public $reachesIntoOuterContext;
+    public int $reachesIntoOuterContext = 0;
 
-    /** @var SemanticContext */
-    public $semanticContext;
+    public SemanticContext $semanticContext;
 
     public function __construct(
         ?self $oldConfig,
         ?ATNState $state,
         ?PredictionContext $context = null,
         ?SemanticContext $semanticContext = null,
-        ?int $alt = null
+        ?int $alt = null,
     ) {
         if ($oldConfig === null) {
             if ($state === null) {
-                throw new \RuntimeException('ATN State cannot be null.');
+                throw new \InvalidArgumentException('ATN State cannot be null.');
             }
 
             $this->state = $state;
@@ -107,17 +98,17 @@ class ATNConfig implements Hashable
      * field as it existed prior to the introduction of the
      * {@see ATNConfig::isPrecedenceFilterSuppressed()} method.
      */
-    public function getOuterContextDepth() : int
+    public function getOuterContextDepth(): int
     {
         return $this->reachesIntoOuterContext & ~self::SUPPRESS_PRECEDENCE_FILTER;
     }
 
-    public function isPrecedenceFilterSuppressed() : bool
+    public function isPrecedenceFilterSuppressed(): bool
     {
         return ($this->reachesIntoOuterContext & self::SUPPRESS_PRECEDENCE_FILTER) !== 0;
     }
 
-    public function setPrecedenceFilterSuppressed(bool $value) : void
+    public function setPrecedenceFilterSuppressed(bool $value): void
     {
         if ($value) {
             $this->reachesIntoOuterContext |= self::SUPPRESS_PRECEDENCE_FILTER;
@@ -130,7 +121,7 @@ class ATNConfig implements Hashable
      * An ATN configuration is equal to another if both have the same state, they
      * predict the same alternative, and syntactic/semantic contexts are the same.
      */
-    public function equals(object $other) : bool
+    public function equals(object $other): bool
     {
         if ($this === $other) {
             return true;
@@ -144,17 +135,17 @@ class ATNConfig implements Hashable
             && Equality::equals($this->context, $other->context);
     }
 
-    public function hashCode() : int
+    public function hashCode(): int
     {
         return Hasher::hash(
             $this->state->stateNumber,
             $this->alt,
             $this->context,
-            $this->semanticContext
+            $this->semanticContext,
         );
     }
 
-    public function toString(bool $showAlt) : string
+    public function toString(bool $showAlt): string
     {
         $buf = '(' . $this->state;
 
@@ -179,17 +170,17 @@ class ATNConfig implements Hashable
         return $buf;
     }
 
-    public function __toString() : string
+    public function __toString(): string
     {
         return \sprintf(
             '(%s,%d%s%s%s)',
             $this->state,
             $this->alt,
             $this->context !== null ? ',[' . $this->context . ']' : '',
-            $this->semanticContext !== null && $this->semanticContext->equals(SemanticContext::none()) ?
+            $this->semanticContext->equals(SemanticContext::none()) ?
                 ',' . $this->semanticContext :
                 '',
-            $this->reachesIntoOuterContext > 0 ? ',up=' . $this->reachesIntoOuterContext : ''
+            $this->reachesIntoOuterContext > 0 ? ',up=' . $this->reachesIntoOuterContext : '',
         );
     }
 }

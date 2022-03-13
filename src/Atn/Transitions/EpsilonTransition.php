@@ -8,8 +8,7 @@ use Antlr\Antlr4\Runtime\Atn\States\ATNState;
 
 final class EpsilonTransition extends Transition
 {
-    /** @var int */
-    private $outermostPrecedenceReturn;
+    private int $outermostPrecedenceReturn;
 
     public function __construct(ATNState $target, int $outermostPrecedenceReturn = -1)
     {
@@ -26,12 +25,12 @@ final class EpsilonTransition extends Transition
      * @see ATNConfig::isPrecedenceFilterSuppressed()
      * @see ParserATNSimulator::applyPrecedenceFilter()
      */
-    public function getOutermostPrecedenceReturn() : int
+    public function getOutermostPrecedenceReturn(): int
     {
         return $this->outermostPrecedenceReturn;
     }
 
-    public function matches(int $symbol, int $minVocabSymbol, int $maxVocabSymbol) : bool
+    public function matches(int $symbol, int $minVocabSymbol, int $maxVocabSymbol): bool
     {
         return false;
     }
@@ -39,17 +38,17 @@ final class EpsilonTransition extends Transition
     /**
      * {@inheritdoc}
      */
-    public function isEpsilon() : bool
+    public function isEpsilon(): bool
     {
         return true;
     }
 
-    public function getSerializationType() : int
+    public function getSerializationType(): int
     {
         return self::EPSILON;
     }
 
-    public function equals(object $other) : bool
+    public function equals(object $other): bool
     {
         if ($this === $other) {
             return true;
@@ -60,7 +59,7 @@ final class EpsilonTransition extends Transition
             && $this->target->equals($other->target);
     }
 
-    public function __toString() : string
+    public function __toString(): string
     {
         return 'epsilon';
     }

@@ -17,7 +17,7 @@ final class ArrayPredictionContext extends PredictionContext
      *
      * @var array<PredictionContext|null>
      */
-    public $parents;
+    public array $parents;
 
     /**
      * Sorted for merge, no duplicates; if present,
@@ -25,7 +25,7 @@ final class ArrayPredictionContext extends PredictionContext
      *
      * @var array<int>
      */
-    public $returnStates;
+    public array $returnStates;
 
     /**
      * @param array<PredictionContext|null> $parents
@@ -39,7 +39,7 @@ final class ArrayPredictionContext extends PredictionContext
         $this->returnStates = $returnStates;
     }
 
-    public static function fromOne(SingletonPredictionContext $ctx) : self
+    public static function fromOne(SingletonPredictionContext $ctx): self
     {
         return new ArrayPredictionContext([$ctx->parent], [$ctx->returnState]);
     }
@@ -47,7 +47,7 @@ final class ArrayPredictionContext extends PredictionContext
     /**
      * @param array<PredictionContext|null> $parents
      */
-    public function withParents(array $parents) : self
+    public function withParents(array $parents): self
     {
         $clone = clone $this;
         $clone->parents = $parents;
@@ -55,28 +55,28 @@ final class ArrayPredictionContext extends PredictionContext
         return $clone;
     }
 
-    public function isEmpty() : bool
+    public function isEmpty(): bool
     {
         // since EMPTY_RETURN_STATE can only appear in the last position, we don't need to verify that size==1
         return $this->returnStates[0] === PredictionContext::EMPTY_RETURN_STATE;
     }
 
-    public function getLength() : int
+    public function getLength(): int
     {
         return \count($this->returnStates);
     }
 
-    public function getParent(int $index) : ?PredictionContext
+    public function getParent(int $index): ?PredictionContext
     {
         return $this->parents[$index];
     }
 
-    public function getReturnState(int $index) : int
+    public function getReturnState(int $index): int
     {
         return $this->returnStates[$index];
     }
 
-    public function equals(object $other) : bool
+    public function equals(object $other): bool
     {
         if ($this === $other) {
             return true;
@@ -93,7 +93,7 @@ final class ArrayPredictionContext extends PredictionContext
         return Equality::equals($this->parents, $other->parents);
     }
 
-    public function __toString() : string
+    public function __toString(): string
     {
         if ($this->isEmpty()) {
             return '[]';
@@ -107,6 +107,7 @@ final class ArrayPredictionContext extends PredictionContext
 
             if ($this->returnStates[$i] === PredictionContext::EMPTY_RETURN_STATE) {
                 $string .= '$';
+
                 continue;
             }
 
@@ -122,7 +123,7 @@ final class ArrayPredictionContext extends PredictionContext
         return $string . ']';
     }
 
-    protected function computeHashCode() : int
+    protected function computeHashCode(): int
     {
         return Hasher::hash($this->parents, $this->returnStates);
     }

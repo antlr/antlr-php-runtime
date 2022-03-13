@@ -15,14 +15,11 @@ use Antlr\Antlr4\Runtime\Parser;
  */
 class FailedPredicateException extends RecognitionException
 {
-    /** @var int */
-    private $ruleIndex;
+    private int $ruleIndex;
 
-    /** @var int */
-    private $predicateIndex;
+    private int $predicateIndex;
 
-    /** @var string|null */
-    private $predicate;
+    private ?string $predicate = null;
 
     public function __construct(Parser $recognizer, string $predicate, ?string $message = null)
     {
@@ -30,13 +27,13 @@ class FailedPredicateException extends RecognitionException
             $recognizer,
             $recognizer->getInputStream(),
             $recognizer->getContext(),
-            $this->formatMessage($predicate, $message)
+            $this->formatMessage($predicate, $message),
         );
 
         $interpreter = $recognizer->getInterpreter();
 
         if ($interpreter === null) {
-            throw new \RuntimeException('Unexpected null interpreter.');
+            throw new \InvalidArgumentException('Unexpected null interpreter.');
         }
 
         $s = $interpreter->atn->states[$recognizer->getState()];
@@ -55,22 +52,22 @@ class FailedPredicateException extends RecognitionException
         $this->setOffendingToken($recognizer->getCurrentToken());
     }
 
-    public function getRuleIndex() : int
+    public function getRuleIndex(): int
     {
         return $this->ruleIndex;
     }
 
-    public function getPredicateIndex() : int
+    public function getPredicateIndex(): int
     {
         return $this->predicateIndex;
     }
 
-    public function getPredicate() : ?string
+    public function getPredicate(): ?string
     {
         return $this->predicate;
     }
 
-    public function formatMessage(string $predicate, ?string $message = null) : string
+    public function formatMessage(string $predicate, ?string $message = null): string
     {
         if ($message !== null) {
             return $message;

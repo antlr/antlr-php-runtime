@@ -9,33 +9,35 @@ use Antlr\Antlr4\Runtime\Comparison\Equatable;
 use Antlr\Antlr4\Runtime\Comparison\Equivalence;
 use Antlr\Antlr4\Runtime\Comparison\Hashable;
 
+/**
+ * @template T of Hashable
+ */
 final class Set implements Equatable, \IteratorAggregate, \Countable
 {
-    /** @var array<int, array<mixed>> */
-    private $table = [];
+    /** @var array<int, array<T>> */
+    private array $table = [];
 
-    /** @var int */
-    private $size = 0;
+    /** @var int<0, max>  */
+    private int $size = 0;
 
-    /** @var DefaultEquivalence|Equivalence */
-    private $equivalence;
+    private DefaultEquivalence|Equivalence $equivalence;
 
     public function __construct(?Equivalence $equivalence = null)
     {
         $this->equivalence = $equivalence ?? new DefaultEquivalence();
     }
 
-    public function isEmpty() : bool
+    public function isEmpty(): bool
     {
         return $this->count() === 0;
     }
 
-    public function count() : int
+    public function count(): int
     {
         return $this->size;
     }
 
-    public function contains($value) : bool
+    public function contains(mixed $value): bool
     {
         if (!$value instanceof Hashable) {
             return false;
@@ -56,7 +58,12 @@ final class Set implements Equatable, \IteratorAggregate, \Countable
         return false;
     }
 
-    public function getOrAdd(Hashable $value) : Hashable
+    /**
+     * @param T $value
+     *
+     * @return T
+     */
+    public function getOrAdd(Hashable $value): Hashable
     {
         $hash = $this->equivalence->hash($value);
 
@@ -77,7 +84,12 @@ final class Set implements Equatable, \IteratorAggregate, \Countable
         return $value;
     }
 
-    public function get(Hashable $value) : ?Hashable
+    /**
+     * @param T $value
+     *
+     * @return T|null
+     */
+    public function get(Hashable $value): ?Hashable
     {
         $hash = $this->equivalence->hash($value);
 
@@ -95,16 +107,19 @@ final class Set implements Equatable, \IteratorAggregate, \Countable
     }
 
     /**
-     * @param iterable<Hashable> $values
+     * @param iterable<T> $values
      */
-    public function addAll(iterable $values) : void
+    public function addAll(iterable $values): void
     {
         foreach ($values as $value) {
             $this->add($value);
         }
     }
 
-    public function add(Hashable $value) : bool
+    /**
+     * @param T $value
+     */
+    public function add(Hashable $value): bool
     {
         $hash = $this->equivalence->hash($value);
 
@@ -125,7 +140,10 @@ final class Set implements Equatable, \IteratorAggregate, \Countable
         return true;
     }
 
-    public function remove(Hashable $value) : void
+    /**
+     * @param T $value
+     */
+    public function remove(Hashable $value): void
     {
         $hash = $this->equivalence->hash($value);
 
@@ -144,13 +162,15 @@ final class Set implements Equatable, \IteratorAggregate, \Countable
                 unset($this->table[$hash]);
             }
 
-            $this->size--;
+            if ($this->size > 0) {
+                $this->size--;
+            }
 
             return;
         }
     }
 
-    public function equals(object $other) : bool
+    public function equals(object $other): bool
     {
         if ($this === $other) {
             return true;
@@ -180,9 +200,9 @@ final class Set implements Equatable, \IteratorAggregate, \Countable
     }
 
     /**
-     * @return array<mixed>
+     * @return array<T>
      */
-    public function getValues() : array
+    public function getValues(): array
     {
         $values = [];
         foreach ($this->table as $bucket) {
@@ -194,7 +214,10 @@ final class Set implements Equatable, \IteratorAggregate, \Countable
         return $values;
     }
 
-    public function getIterator() : \Iterator
+    /**
+     * @return \Iterator<T>
+     */
+    public function getIterator(): \Iterator
     {
         foreach ($this->table as $bucket) {
             foreach ($bucket as $value) {

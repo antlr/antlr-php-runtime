@@ -45,39 +45,31 @@ abstract class ATNState implements Hashable
 
     /**
      * Which ATN are we in?
-     *
-     * @var ATN|null
      */
-    public $atn;
+    public ?ATN $atn = null;
 
-    /** @var int */
-    public $stateNumber = self::INVALID_STATE_NUMBER;
+    public int $stateNumber = self::INVALID_STATE_NUMBER;
 
     /**
      * Initially, at runtime, we don't have Rule objects.
-     *
-     * @var int
      */
-    public $ruleIndex = 0;
+    public int $ruleIndex = 0;
 
-    /** @var bool */
-    public $epsilonOnlyTransitions = false;
+    public bool $epsilonOnlyTransitions = false;
 
     /**
      * Track the transitions emanating from this ATN state.
      *
      * @var array<Transition>
      */
-    protected $transitions = [];
+    protected array $transitions = [];
 
     /**
      * Used to cache lookahead during parsing, not used during construction.
-     *
-     * @var IntervalSet|null
      */
-    public $nextTokenWithinRule;
+    public ?IntervalSet $nextTokenWithinRule = null;
 
-    public function equals(object $other) : bool
+    public function equals(object $other): bool
     {
         if ($this === $other) {
             return true;
@@ -87,7 +79,7 @@ abstract class ATNState implements Hashable
             && $this->stateNumber === $other->stateNumber;
     }
 
-    public function isNonGreedyExitState() : bool
+    public function isNonGreedyExitState(): bool
     {
         return false;
     }
@@ -95,17 +87,17 @@ abstract class ATNState implements Hashable
     /**
      * @return array<Transition>
      */
-    public function getTransitions() : array
+    public function getTransitions(): array
     {
         return $this->transitions;
     }
 
-    public function getNumberOfTransitions() : int
+    public function getNumberOfTransitions(): int
     {
         return \count($this->transitions);
     }
 
-    public function addTransition(Transition $trans, int $index = -1) : void
+    public function addTransition(Transition $trans, int $index = -1): void
     {
         if (\count($this->transitions) === 0) {
             $this->epsilonOnlyTransitions = $trans->isEpsilon();
@@ -120,12 +112,12 @@ abstract class ATNState implements Hashable
         }
     }
 
-    public function getTransition(int $index) : Transition
+    public function getTransition(int $index): Transition
     {
         return $this->transitions[$index];
     }
 
-    public function setTransition(Transition $trans, int $index) : void
+    public function setTransition(Transition $trans, int $index): void
     {
         $this->transitions[$index] = $trans;
     }
@@ -133,35 +125,35 @@ abstract class ATNState implements Hashable
     /**
      * @param array<Transition> $transitions
      */
-    public function setTransitions(array $transitions) : void
+    public function setTransitions(array $transitions): void
     {
         $this->transitions = $transitions;
     }
 
-    public function removeTransition(int $index) : void
+    public function removeTransition(int $index): void
     {
         \array_splice($this->transitions, $index, 1);
     }
 
-    public function onlyHasEpsilonTransitions() : bool
+    public function onlyHasEpsilonTransitions(): bool
     {
         return $this->epsilonOnlyTransitions;
     }
 
-    public function setRuleIndex(int $ruleIndex) : void
+    public function setRuleIndex(int $ruleIndex): void
     {
         $this->ruleIndex = $ruleIndex;
     }
 
-    public function __toString() : string
+    public function __toString(): string
     {
         return (string) $this->stateNumber;
     }
 
-    public function hashCode() : int
+    public function hashCode(): int
     {
         return $this->getStateType();
     }
 
-    abstract public function getStateType() : int;
+    abstract public function getStateType(): int;
 }

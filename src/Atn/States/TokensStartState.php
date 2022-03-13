@@ -6,7 +6,7 @@ namespace Antlr\Antlr4\Runtime\Atn\States;
 
 final class TokensStartState extends DecisionState
 {
-    public function getStateType() : int
+    public function getStateType(): int
     {
         return self::TOKEN_START;
     }

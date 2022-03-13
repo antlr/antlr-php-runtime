@@ -15,8 +15,7 @@ use Antlr\Antlr4\Runtime\Lexer;
  */
 final class LexerChannelAction implements LexerAction
 {
-    /** @var int */
-    private $channel;
+    private int $channel;
 
     /**
      * Constructs a new `channel` action with the specified channel value.
@@ -33,7 +32,7 @@ final class LexerChannelAction implements LexerAction
      *
      * @return int The channel to use for the {@see Token} created by the lexer.
      */
-    public function getChannel() : int
+    public function getChannel(): int
     {
         return $this->channel;
     }
@@ -43,7 +42,7 @@ final class LexerChannelAction implements LexerAction
      *
      * @return int This method returns {@see LexerActionType::CHANNEL}.
      */
-    public function getActionType() : int
+    public function getActionType(): int
     {
         return LexerActionType::CHANNEL;
     }
@@ -53,7 +52,7 @@ final class LexerChannelAction implements LexerAction
      *
      * @return bool This method returns `false`.
      */
-    public function isPositionDependent() : bool
+    public function isPositionDependent(): bool
     {
         return false;
     }
@@ -64,17 +63,17 @@ final class LexerChannelAction implements LexerAction
      * This action is implemented by calling {@see Lexer::setChannel()} with the
      * value provided by {@see LexerChannelAction::getChannel()}.
      */
-    public function execute(Lexer $lexer) : void
+    public function execute(Lexer $lexer): void
     {
         $lexer->channel = $this->channel;
     }
 
-    public function hashCode() : int
+    public function hashCode(): int
     {
         return Hasher::hash($this->getActionType(), $this->channel);
     }
 
-    public function equals(object $other) : bool
+    public function equals(object $other): bool
     {
         if ($this === $other) {
             return true;
@@ -87,7 +86,7 @@ final class LexerChannelAction implements LexerAction
         return $this->channel === $other->channel;
     }
 
-    public function __toString() : string
+    public function __toString(): string
     {
         return \sprintf('channel(%d)', $this->channel);
     }

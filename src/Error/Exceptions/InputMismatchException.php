@@ -18,7 +18,7 @@ class InputMismatchException extends RecognitionException
         parent::__construct(
             $recognizer,
             $recognizer->getInputStream(),
-            $ctx ?? $recognizer->getContext()
+            $ctx ?? $recognizer->getContext(),
         );
 
         if ($state !== null) {

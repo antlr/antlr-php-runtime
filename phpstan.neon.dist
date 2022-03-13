@@ -1,6 +1,33 @@
 includes:
-    - vendor/phpstan/phpstan/conf/bleedingEdge.neon
+	- vendor/phpstan/phpstan/conf/bleedingEdge.neon
 
 parameters:
     level: max
     paths: [src]
+    tmpDir: '%rootDir%/../../../.cache/phpstan'
+    checkGenericClassInNonGenericObjectType: false
+    exceptions:
+        implicitThrows: false
+        uncheckedExceptionClasses:
+            - LogicException
+            - ArithmeticError
+            - Antlr\Antlr4\Runtime\Error\Exceptions\ParseCancellationException
+        check:
+            missingCheckedExceptionInThrows: true
+            tooWideThrowType: true
+    ignoreErrors:
+        -
+            path: src/Dfa/DFA.php
+            message: '#^Property Antlr\\Antlr4\\Runtime\\Dfa\\DFAState\:\:\$edges \(SplFixedArray\<Antlr\\Antlr4\\Runtime\\Dfa\\DFAState\>\|null\) does not accept SplFixedArray\<mixed\>.$#'
+        -
+            path: src/Atn/ParserATNSimulator.php
+            message: '#^Property Antlr\\Antlr4\\Runtime\\Dfa\\DFAState\:\:\$edges \(SplFixedArray\<Antlr\\Antlr4\\Runtime\\Dfa\\DFAState\>\|null\) does not accept SplFixedArray\<mixed\>.$#'
+        -
+            path: src/Atn/ParserATNSimulator.php
+            message: '#^Property Antlr\\Antlr4\\Runtime\\Dfa\\DFAState\:\:\$edges \(SplFixedArray\<Antlr\\Antlr4\\Runtime\\Dfa\\DFAState\>\|null\) does not accept non\-empty\-array\<int\<0, max\>, Antlr\\Antlr4\\Runtime\\Dfa\\DFAState\>\|SplFixedArray\<Antlr\\Antlr4\\Runtime\\Dfa\\DFAState\>\.$#'
+        -
+            path: src/Atn/LexerATNSimulator.php
+            message: '#^Property Antlr\\Antlr4\\Runtime\\Dfa\\DFAState\:\:\$edges \(SplFixedArray\<Antlr\\Antlr4\\Runtime\\Dfa\\DFAState\>\|null\) does not accept SplFixedArray\<mixed\>\.$#'
+        -
+            path: src/Atn/LexerATNSimulator.php
+            message: '#^Property Antlr\\Antlr4\\Runtime\\Dfa\\DFAState\:\:\$edges \(SplFixedArray\<Antlr\\Antlr4\\Runtime\\Dfa\\DFAState\>\|null\) does not accept non\-empty\-array\<int\<0, 127\>, Antlr\\Antlr4\\Runtime\\Dfa\\DFAState\>\|SplFixedArray\<Antlr\\Antlr4\\Runtime\\Dfa\\DFAState\>\.$#'

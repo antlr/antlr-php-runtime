@@ -20,11 +20,11 @@ final class LexerMoreAction implements LexerAction
     /**
      * Provides a singleton instance of this parameterless lexer action.
      */
-    public static function instance() : self
+    public static function instance(): self
     {
         static $instance;
 
-        return $instance = $instance ?? new self();
+        return $instance ??= new self();
     }
 
     /**
@@ -32,7 +32,7 @@ final class LexerMoreAction implements LexerAction
      *
      * @return int This method returns {@see LexerActionType::MORE}.
      */
-    public function getActionType() : int
+    public function getActionType(): int
     {
         return LexerActionType::MORE;
     }
@@ -42,7 +42,7 @@ final class LexerMoreAction implements LexerAction
      *
      * @return bool This method returns `false`.
      */
-    public function isPositionDependent() : bool
+    public function isPositionDependent(): bool
     {
         return false;
     }
@@ -52,17 +52,17 @@ final class LexerMoreAction implements LexerAction
      *
      * This action is implemented by calling {@see Lexer::more()}.
      */
-    public function execute(Lexer $lexer) : void
+    public function execute(Lexer $lexer): void
     {
         $lexer->more();
     }
 
-    public function hashCode() : int
+    public function hashCode(): int
     {
         return Hasher::hash($this->getActionType());
     }
 
-    public function equals(object $other) : bool
+    public function equals(object $other): bool
     {
         if ($this === $other) {
             return true;
@@ -71,7 +71,7 @@ final class LexerMoreAction implements LexerAction
         return $other instanceof self;
     }
 
-    public function __toString() : string
+    public function __toString(): string
     {
         return 'more';
     }

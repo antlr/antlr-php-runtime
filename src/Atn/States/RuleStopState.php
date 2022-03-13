@@ -6,7 +6,7 @@ namespace Antlr\Antlr4\Runtime\Atn\States;
 
 final class RuleStopState extends ATNState
 {
-    public function getStateType() : int
+    public function getStateType(): int
     {
         return self::RULE_STOP;
     }

@@ -12,11 +12,9 @@ use Antlr\Antlr4\Runtime\Vocabulary;
  */
 class DFASerializer
 {
-    /** @var DFA */
-    private $dfa;
+    private DFA $dfa;
 
-    /** @var Vocabulary */
-    private $vocabulary;
+    private Vocabulary $vocabulary;
 
     public function __construct(DFA $dfa, Vocabulary $vocabulary)
     {
@@ -24,7 +22,7 @@ class DFASerializer
         $this->vocabulary = $vocabulary;
     }
 
-    public function toString() : string
+    public function toString(): string
     {
         if ($this->dfa->s0 === null) {
             return '';
@@ -34,10 +32,13 @@ class DFASerializer
 
         /** @var DFAState $state */
         foreach ($this->dfa->getStates() as $state) {
-            $count = $state->edges === null ? 0 : $state->edges->count();
+            if ($state->edges === null) {
+                continue;
+            }
+
+            $count = $state->edges->count();
 
             for ($i = 0; $i < $count; $i++) {
-                /** @var DFAState $t */
                 $t = $state->edges[$i];
 
                 if ($t !== null && $t->stateNumber !== 0x7FFFFFFF) {
@@ -53,12 +54,12 @@ class DFASerializer
         return $string;
     }
 
-    protected function getEdgeLabel(int $i) : string
+    protected function getEdgeLabel(int $i): string
     {
         return $this->vocabulary->getDisplayName($i - 1);
     }
 
-    protected function getStateString(DFAState $state) : string
+    protected function getStateString(DFAState $state): string
     {
         if ($state->equals(ATNSimulator::error())) {
             return 'ERROR';
@@ -68,7 +69,7 @@ class DFASerializer
             '%ss%d%s',
             $state->isAcceptState ? ':' : '',
             $state->stateNumber,
-            $state->requiresFullContext ? '^' : ''
+            $state->requiresFullContext ? '^' : '',
         );
 
         if ($state->isAcceptState) {
@@ -82,7 +83,7 @@ class DFASerializer
         return $baseStateStr;
     }
 
-    public function __toString() : string
+    public function __toString(): string
     {
         return $this->toString();
     }

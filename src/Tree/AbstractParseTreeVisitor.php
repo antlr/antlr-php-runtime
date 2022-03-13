@@ -4,16 +4,19 @@ declare(strict_types=1);
 
 namespace Antlr\Antlr4\Runtime\Tree;
 
+/**
+ * @template T
+ *
+ * @implements ParseTreeVisitor<T|null>
+ */
 class AbstractParseTreeVisitor implements ParseTreeVisitor
 {
     /**
      * {@inheritdoc}
      *
      * The default implementation calls {@see ParseTree::accept()} on the specified tree.
-     *
-     * @return mixed
      */
-    public function visit(ParseTree $tree)
+    public function visit(ParseTree $tree): mixed
     {
         return $tree->accept($this);
     }
@@ -32,16 +35,14 @@ class AbstractParseTreeVisitor implements ParseTreeVisitor
      * The default implementation is not safe for use in visitors that modify
      * the tree structure. Visitors that modify the tree should override this
      * method to behave properly in respect to the specific algorithm in use.
-     *
-     * @return mixed
      */
-    public function visitChildren(RuleNode $node)
+    public function visitChildren(RuleNode $node): mixed
     {
         $result = $this->defaultResult();
 
         $n = $node->getChildCount();
 
-        for ($i=0; $i < $n; $i++) {
+        for ($i = 0; $i < $n; $i++) {
             if (!$this->shouldVisitNextChild($node, $result)) {
                 break;
             }
@@ -62,10 +63,8 @@ class AbstractParseTreeVisitor implements ParseTreeVisitor
      *
      * The default implementation returns the result of
      * {@see AbstractParseTreeVisitor::defaultResult()}.
-     *
-     * @return mixed
      */
-    public function visitTerminal(TerminalNode $node)
+    public function visitTerminal(TerminalNode $node): mixed
     {
         return $this->defaultResult();
     }
@@ -75,10 +74,8 @@ class AbstractParseTreeVisitor implements ParseTreeVisitor
      *
      * The default implementation returns the result of
      * {@see AbstractParseTreeVisitor::defaultResult()}.
-     *
-     * @return mixed
      */
-    public function visitErrorNode(ErrorNode $tree)
+    public function visitErrorNode(ErrorNode $tree): mixed
     {
         return $this->defaultResult();
     }
@@ -93,9 +90,9 @@ class AbstractParseTreeVisitor implements ParseTreeVisitor
      *
      * The base implementation returns `null`.
      *
-     * @return mixed
+     * @return T|null
      */
-    protected function defaultResult()
+    protected function defaultResult(): mixed
     {
         return null;
     }
@@ -112,17 +109,17 @@ class AbstractParseTreeVisitor implements ParseTreeVisitor
      * of the last child visited (or return the initial value if the node has
      * no children).
      *
-     * @param mixed $aggregate  The previous aggregate value. In the default
-     *                          implementation, the aggregate value is initialized
-     *                          to {@see AbstractParseTreeVisitor::defaultResult()},
-     *                          which is passed as the `aggregate` argument to
-     *                          this method after the first child node is visited.
-     * @param mixed $nextResult The result of the immediately preceeding call to
-     *                          visit a child node.
+     * @param T|null $aggregate  The previous aggregate value. In the default
+     *                      implementation, the aggregate value is initialized
+     *                      to {@see AbstractParseTreeVisitor::defaultResult()},
+     *                      which is passed as the `aggregate` argument to
+     *                      this method after the first child node is visited.
+     * @param T|null $nextResult The result of the immediately preceeding call to
+     *                      visit a child node.
      *
-     * @return mixed
+     * @return T|null
      */
-    protected function aggregateResult($aggregate, $nextResult)
+    protected function aggregateResult(mixed $aggregate, mixed $nextResult): mixed
     {
         return $nextResult;
     }
@@ -144,14 +141,14 @@ class AbstractParseTreeVisitor implements ParseTreeVisitor
      *
      * @param RuleNode $node          The {@see RuleNode} whose children are
      *                                currently being visited.
-     * @param mixed    $currentResult The current aggregate result of the children
-     *                                visited to the current point.
+     * @param T|null   $currentResult The current aggregate result of the children
+     *                           visited to the current point.
      *
      * @return bool `true` to continue visiting children. Otherwise return `false`
      *              to stop visiting children and immediately return the current
      *              aggregate result from {@see AbstractParseTreeVisitor::visitChildren()}.
      */
-    protected function shouldVisitNextChild(RuleNode $node, $currentResult) : bool
+    protected function shouldVisitNextChild(RuleNode $node, mixed $currentResult): bool
     {
         return true;
     }

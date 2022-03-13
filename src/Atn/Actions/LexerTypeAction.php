@@ -15,8 +15,7 @@ use Antlr\Antlr4\Runtime\Lexer;
  */
 final class LexerTypeAction implements LexerAction
 {
-    /** @var int */
-    private $type;
+    private int $type;
 
     /**
      * Constructs a new `type` action with the specified token type value.
@@ -33,7 +32,7 @@ final class LexerTypeAction implements LexerAction
      *
      * @return int The type to assign to a token created by the lexer.
      */
-    public function getType() : int
+    public function getType(): int
     {
         return $this->type;
     }
@@ -43,7 +42,7 @@ final class LexerTypeAction implements LexerAction
      *
      * @return int This method returns {@see LexerActionType::TYPE}.
      */
-    public function getActionType() : int
+    public function getActionType(): int
     {
         return LexerActionType::TYPE;
     }
@@ -53,7 +52,7 @@ final class LexerTypeAction implements LexerAction
      *
      * @return bool This method returns `false`.
      */
-    public function isPositionDependent() : bool
+    public function isPositionDependent(): bool
     {
         return false;
     }
@@ -64,17 +63,17 @@ final class LexerTypeAction implements LexerAction
      * This action is implemented by calling {@see Lexer::setType()} with the
      * value provided by {@see LexerTypeAction::getType()}.
      */
-    public function execute(Lexer $lexer) : void
+    public function execute(Lexer $lexer): void
     {
         $lexer->setType($this->type);
     }
 
-    public function hashCode() : int
+    public function hashCode(): int
     {
         return Hasher::hash($this->getActionType(), $this->type);
     }
 
-    public function equals(object $other) : bool
+    public function equals(object $other): bool
     {
         if ($this === $other) {
             return true;
@@ -87,7 +86,7 @@ final class LexerTypeAction implements LexerAction
         return $this->type === $other->type;
     }
 
-    public function __toString() : string
+    public function __toString(): string
     {
         return \sprintf('type(%d)', $this->type);
     }

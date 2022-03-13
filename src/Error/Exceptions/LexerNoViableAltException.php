@@ -13,17 +13,13 @@ class LexerNoViableAltException extends RecognitionException
 {
     /**
      * Matching attempted at what input index?
-     *
-     * @var int
      */
-    private $startIndex;
+    private int $startIndex;
 
     /**
      * Which configurations did we try at $input->index() that couldn't match $input->LA(1)?
-     *
-     * @var ATNConfigSet
      */
-    private $deadEndConfigs;
+    private ATNConfigSet $deadEndConfigs;
 
     public function __construct(Lexer $lexer, CharStream $input, int $startIndex, ATNConfigSet $deadEndConfigs)
     {
@@ -33,21 +29,21 @@ class LexerNoViableAltException extends RecognitionException
         $this->deadEndConfigs = $deadEndConfigs;
     }
 
-    public function getDeadEndConfigs() : ATNConfigSet
+    public function getDeadEndConfigs(): ATNConfigSet
     {
         return $this->deadEndConfigs;
     }
 
-    public function __toString() : string
+    public function __toString(): string
     {
         $symbol = '';
         $input = $this->getInputStream();
 
         if (!$input instanceof CharStream) {
-            throw new \RuntimeException('Unexpected stream type.');
+            throw new \LogicException('Unexpected stream type.');
         }
 
-        if ($input !== null && $this->startIndex >= 0 && $this->startIndex < $input->getLength()) {
+        if ($this->startIndex >= 0 && $this->startIndex < $input->getLength()) {
             $symbol = $input->getText($this->startIndex, $this->startIndex);
             $symbol = StringUtils::escapeWhitespace($symbol, false);
         }

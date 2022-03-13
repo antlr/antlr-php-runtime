@@ -6,5 +6,5 @@ namespace Antlr\Antlr4\Runtime\Comparison;
 
 interface Equatable
 {
-    public function equals(object $other) : bool;
+    public function equals(object $other): bool;
 }

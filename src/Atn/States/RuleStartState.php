@@ -6,13 +6,11 @@ namespace Antlr\Antlr4\Runtime\Atn\States;
 
 final class RuleStartState extends ATNState
 {
-    /** @var RuleStopState|null */
-    public $stopState;
+    public ?RuleStopState $stopState = null;
 
-    /** @var bool */
-    public $isLeftRecursiveRule = false;
+    public bool $isLeftRecursiveRule = false;
 
-    public function getStateType() : int
+    public function getStateType(): int
     {
         return self::RULE_START;
     }

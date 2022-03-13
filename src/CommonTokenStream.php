@@ -35,10 +35,8 @@ final class CommonTokenStream extends BufferedTokenStream
      *
      * The default value is {@see Token::DEFAULT_CHANNEL}, which matches the
      * default channel assigned to tokens created by the lexer.
-     *
-     * @var int
      */
-    protected $channel;
+    protected int $channel;
 
     /**
      * Constructs a new {@see CommonTokenStream} using the specified token
@@ -57,12 +55,12 @@ final class CommonTokenStream extends BufferedTokenStream
         $this->channel = $channel;
     }
 
-    public function adjustSeekIndex(int $i) : int
+    public function adjustSeekIndex(int $i): int
     {
         return $this->nextTokenOnChannel($i, $this->channel);
     }
 
-    protected function LB(int $k) : ?Token
+    protected function LB(int $k): ?Token
     {
         if ($k === 0 || $this->index - $k < 0) {
             return null;
@@ -84,7 +82,7 @@ final class CommonTokenStream extends BufferedTokenStream
         return $this->tokens[$i];
     }
 
-    public function LT(int $k) : ?Token
+    public function LT(int $k): ?Token
     {
         $this->lazyInit();
 
@@ -114,7 +112,7 @@ final class CommonTokenStream extends BufferedTokenStream
     /**
      * Count EOF just once.
      */
-    public function getNumberOfOnChannelTokens() : int
+    public function getNumberOfOnChannelTokens(): int
     {
         $n = 0;
 

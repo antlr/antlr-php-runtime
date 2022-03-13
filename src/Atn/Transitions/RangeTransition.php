@@ -10,11 +10,9 @@ use Antlr\Antlr4\Runtime\Utils\StringUtils;
 
 final class RangeTransition extends Transition
 {
-    /** @var int */
-    public $from;
+    public int $from;
 
-    /** @var int */
-    public $to;
+    public int $to;
 
     public function __construct(ATNState $target, int $from, int $to)
     {
@@ -24,22 +22,22 @@ final class RangeTransition extends Transition
         $this->to = $to;
     }
 
-    public function label() : ?IntervalSet
+    public function label(): ?IntervalSet
     {
         return IntervalSet::fromRange($this->from, $this->to);
     }
 
-    public function matches(int $symbol, int $minVocabSymbol, int $maxVocabSymbol) : bool
+    public function matches(int $symbol, int $minVocabSymbol, int $maxVocabSymbol): bool
     {
         return $symbol >= $this->from && $symbol <= $this->to;
     }
 
-    public function getSerializationType() : int
+    public function getSerializationType(): int
     {
         return self::RANGE;
     }
 
-    public function equals(object $other) : bool
+    public function equals(object $other): bool
     {
         if ($this === $other) {
             return true;
@@ -51,12 +49,12 @@ final class RangeTransition extends Transition
             && $this->target->equals($other->target);
     }
 
-    public function __toString() : string
+    public function __toString(): string
     {
         return \sprintf(
             '\'%s\'..\'%s\'',
             StringUtils::char($this->from),
-            StringUtils::char($this->to)
+            StringUtils::char($this->to),
         );
     }
 }

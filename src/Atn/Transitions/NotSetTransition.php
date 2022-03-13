@@ -6,18 +6,18 @@ namespace Antlr\Antlr4\Runtime\Atn\Transitions;
 
 final class NotSetTransition extends SetTransition
 {
-    public function matches(int $symbol, int $minVocabSymbol, int $maxVocabSymbol) : bool
+    public function matches(int $symbol, int $minVocabSymbol, int $maxVocabSymbol): bool
     {
         return $symbol >= $minVocabSymbol && $symbol <= $maxVocabSymbol
             && !parent::matches($symbol, $minVocabSymbol, $maxVocabSymbol);
     }
 
-    public function getSerializationType() : int
+    public function getSerializationType(): int
     {
         return self::NOT_SET;
     }
 
-    public function equals(object $other) : bool
+    public function equals(object $other): bool
     {
         if ($this === $other) {
             return true;
@@ -27,7 +27,7 @@ final class NotSetTransition extends SetTransition
         && $this->target->equals($other->target);
     }
 
-    public function __toString() : string
+    public function __toString(): string
     {
         return '~' . parent::__toString();
     }

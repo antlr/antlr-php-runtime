@@ -8,51 +8,54 @@ use Antlr\Antlr4\Runtime\Comparison\Hasher;
 
 final class BitSet
 {
-    /** @var array<mixed> */
-    private $data = [];
+    /** @var array<int, bool> */
+    private array $data = [];
 
-    public function add(int $value) : void
+    public function add(int $value): void
     {
         $this->data[$value] = true;
     }
 
-    public function or(BitSet $set) : void
+    public function or(BitSet $set): void
     {
         $this->data += $set->data;
     }
 
-    public function remove(int $value) : void
+    public function remove(int $value): void
     {
         unset($this->data[$value]);
     }
 
-    public function contains(int $value) : bool
+    public function contains(int $value): bool
     {
         return \array_key_exists($value, $this->data);
     }
 
     /**
-     * @return array<mixed>
+     * @return array<int>
      */
-    public function values() : array
+    public function values(): array
     {
         return \array_keys($this->data);
     }
 
-    /**
-     * @return mixed
-     */
-    public function minValue()
+    public function minValue(): int
     {
-        return \min($this->values());
+        $values = $this->values();
+
+        if (\count($values) === 0) {
+            throw new \LogicException('BitSet is empty');
+        }
+
+        return \min($values);
     }
 
-    public function hashCode() : int
+    public function hashCode(): int
     {
         return Hasher::hash(...$this->values());
     }
 
-    public function equals(object $other) : bool
+    public function equals(object $other): bool
     {
         if ($this === $other) {
             return true;
@@ -62,12 +65,12 @@ final class BitSet
             && $this->data === $other->data;
     }
 
-    public function length() : int
+    public function length(): int
     {
         return \count($this->data);
     }
 
-    public function __toString() : string
+    public function __toString(): string
     {
         return \sprintf('{%s}', \implode(', ', $this->values()));
     }

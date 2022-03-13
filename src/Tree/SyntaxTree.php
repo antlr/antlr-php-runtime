@@ -29,5 +29,5 @@ interface SyntaxTree extends Tree
      * As a weird special case, the source interval for rules matched after
      * EOF is unspecified.
      */
-    public function getSourceInterval() : Interval;
+    public function getSourceInterval(): Interval;
 }

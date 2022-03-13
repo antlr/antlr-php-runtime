@@ -9,28 +9,34 @@ use Antlr\Antlr4\Runtime\Comparison\Equatable;
 use Antlr\Antlr4\Runtime\Comparison\Equivalence;
 use Antlr\Antlr4\Runtime\Comparison\Hashable;
 
+/**
+ * @template K of Hashable
+ * @template V
+ */
 final class Map implements Equatable, \Countable, \IteratorAggregate
 {
-    /** @var array<int, array<array<Hashable, mixed>>> */
-    private $table = [];
+    /** @var array<int, array<array{K, V}>> */
+    private array $table = [];
 
-    /** @var int */
-    private $size = 0;
+    /** @var int<0, max>  */
+    private int $size = 0;
 
-    /** @var Equivalence */
-    private $equivalence;
+    private Equivalence $equivalence;
 
     public function __construct(?Equivalence $equivalence = null)
     {
         $this->equivalence = $equivalence ?? new DefaultEquivalence();
     }
 
-    public function count() : int
+    public function count(): int
     {
         return $this->size;
     }
 
-    public function contains(Hashable $key) : bool
+    /**
+     * @param K $key
+     */
+    public function contains(Hashable $key): bool
     {
         $hash = $this->equivalence->hash($key);
 
@@ -48,9 +54,11 @@ final class Map implements Equatable, \Countable, \IteratorAggregate
     }
 
     /**
-     * @return mixed
+     * @param K $key
+     *
+     * @return V|null
      */
-    public function get(Hashable $key)
+    public function get(Hashable $key): mixed
     {
         $hash = $this->equivalence->hash($key);
 
@@ -68,9 +76,10 @@ final class Map implements Equatable, \Countable, \IteratorAggregate
     }
 
     /**
-     * @param mixed $value
+     * @param K $key
+     * @param V $value
      */
-    public function put(Hashable $key, $value) : void
+    public function put(Hashable $key, mixed $value): void
     {
         $hash = $this->equivalence->hash($key);
 
@@ -91,7 +100,10 @@ final class Map implements Equatable, \Countable, \IteratorAggregate
         $this->size++;
     }
 
-    public function remove(Hashable $key) : void
+    /**
+     * @param K $key
+     */
+    public function remove(Hashable $key): void
     {
         $hash = $this->equivalence->hash($key);
 
@@ -110,13 +122,15 @@ final class Map implements Equatable, \Countable, \IteratorAggregate
                 unset($this->table[$hash]);
             }
 
-            $this->size--;
+            if ($this->size > 0) {
+                $this->size--;
+            }
 
             return;
         }
     }
 
-    public function equals(object $other) : bool
+    public function equals(object $other): bool
     {
         if ($this === $other) {
             return true;
@@ -149,9 +163,9 @@ final class Map implements Equatable, \Countable, \IteratorAggregate
     }
 
     /**
-     * @return array<Hashable>
+     * @return array<K>
      */
-    public function getKeys() : array
+    public function getKeys(): array
     {
         $values = [];
         foreach ($this->table as $bucket) {
@@ -164,9 +178,9 @@ final class Map implements Equatable, \Countable, \IteratorAggregate
     }
 
     /**
-     * @return array<mixed>
+     * @return array<V>
      */
-    public function getValues() : array
+    public function getValues(): array
     {
         $values = [];
         foreach ($this->table as $bucket) {
@@ -178,7 +192,10 @@ final class Map implements Equatable, \Countable, \IteratorAggregate
         return $values;
     }
 
-    public function getIterator() : \Iterator
+    /**
+     * @return \Iterator<K, V>
+     */
+    public function getIterator(): \Iterator
     {
         foreach ($this->table as $bucket) {
             foreach ($bucket as [$key, $value]) {
@@ -187,7 +204,7 @@ final class Map implements Equatable, \Countable, \IteratorAggregate
         }
     }
 
-    private static function isEqual($left, $right) : bool
+    private static function isEqual(mixed $left, mixed $right): bool
     {
         if ($left instanceof Equatable && $right instanceof Equatable) {
             return $left->equals($right);

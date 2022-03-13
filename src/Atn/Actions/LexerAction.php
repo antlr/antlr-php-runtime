@@ -21,7 +21,7 @@ interface LexerAction extends Hashable
      *
      * @return int The serialization type of the lexer action.
      */
-    public function getActionType() : int;
+    public function getActionType(): int;
 
     /**
      * Gets whether the lexer action is position-dependent. Position-dependent
@@ -37,7 +37,7 @@ interface LexerAction extends Hashable
      *              position of the input {@see CharStream} at the time it is
      *              executed; otherwise, `false`.
      */
-    public function isPositionDependent() : bool;
+    public function isPositionDependent(): bool;
 
     /**
      * Execute the lexer action in the context of the specified {@see Lexer}.
@@ -47,5 +47,5 @@ interface LexerAction extends Hashable
      *
      * @param Lexer $lexer The lexer instance.
      */
-    public function execute(Lexer $lexer) : void;
+    public function execute(Lexer $lexer): void;
 }

@@ -27,7 +27,7 @@ interface TokenSource
      * on the characters until you get a good one; errors are not passed through
      * to the parser.
      */
-    public function nextToken() : ?Token;
+    public function nextToken(): ?Token;
 
     /**
      * Get the line number for the current position in the input stream.
@@ -36,7 +36,7 @@ interface TokenSource
      * @return int The line number for the current position in the input stream,
      *             or 0 if the current token source does not track line numbers.
      */
-    public function getLine() : int;
+    public function getLine(): int;
 
     /**
      * Get the index into the current line for the current position in
@@ -46,7 +46,7 @@ interface TokenSource
      *             or -1 if the current token source does not track
      *             character positions.
      */
-    public function getCharPositionInLine() : int;
+    public function getCharPositionInLine(): int;
 
     /**
      * Get the {@see CharStream} from which this token source is currently
@@ -56,14 +56,14 @@ interface TokenSource
      *                    position in the input, or `null` if no input stream
      *                    is available for the token source.
      */
-    public function getInputStream() : ?IntStream;
+    public function getInputStream(): ?IntStream;
 
     /**
      * Gets the name of the underlying input source. This method returns
      * a non-null, non-empty string. If such a name is not known, this method
      * returns {@see IntStream::UNKNOWN_SOURCE_NAME}.
      */
-    public function getSourceName() : string;
+    public function getSourceName(): string;
 
     /**
      * Set the {@see TokenFactory} this token source should use for creating
@@ -72,7 +72,7 @@ interface TokenSource
      * @param TokenFactory $factory The {@see TokenFactory} to use
      *                              for creating tokens.
      */
-    public function setTokenFactory(TokenFactory $factory) : void;
+    public function setTokenFactory(TokenFactory $factory): void;
 
     /**
      * Gets the {@see TokenFactory} this token source is currently using
@@ -81,5 +81,5 @@ interface TokenSource
      * @return TokenFactory The {@see TokenFactory} currently used
      *                      by this token source.
      */
-    public function getTokenFactory() : TokenFactory;
+    public function getTokenFactory(): TokenFactory;
 }

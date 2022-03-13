@@ -26,8 +26,7 @@ class LL1Analyzer
      */
     public const HIT_PRED = Token::INVALID_TYPE;
 
-    /** @var ATN */
-    public $atn;
+    public ATN $atn;
 
     public function __construct(ATN $atn)
     {
@@ -46,7 +45,7 @@ class LL1Analyzer
      * @return array<IntervalSet|null>|null The expected symbols for
      *                                      each outgoing transition of `s`.
      */
-    public function getDecisionLookahead(?ATNState $s) : ?array
+    public function getDecisionLookahead(?ATNState $s): ?array
     {
         if ($s === null) {
             return null;
@@ -66,7 +65,7 @@ class LL1Analyzer
                 $lookBusy,
                 new BitSet(),
                 $seeThruPreds,
-                false
+                false,
             );
 
             // Wipe out lookahead for this alternative if we found nothing
@@ -100,7 +99,7 @@ class LL1Analyzer
      * @return IntervalSet The set of tokens that can follow `s` in the ATN
      *                     in the specified `context`.
      */
-    public function look(ATNState $s, ?ATNState $stopState, ?RuleContext $context) : IntervalSet
+    public function look(ATNState $s, ?ATNState $stopState, ?RuleContext $context): IntervalSet
     {
         $r = new IntervalSet();
         $seeThruPreds = true;// ignore preds; get all lookahead
@@ -117,7 +116,7 @@ class LL1Analyzer
             new Set(),
             new BitSet(),
             $seeThruPreds,
-            true
+            true,
         );
 
         return $r;
@@ -179,8 +178,8 @@ class LL1Analyzer
         Set $lookBusy,
         BitSet $calledRuleStack,
         bool $seeThruPreds,
-        bool $addEOF
-    ) : void {
+        bool $addEOF,
+    ): void {
         $c = new ATNConfig(null, $s, $context, null, 0);
 
         if (!$lookBusy->add($c)) {
@@ -230,7 +229,7 @@ class LL1Analyzer
                             $lookBusy,
                             $calledRuleStack,
                             $seeThruPreds,
-                            $addEOF
+                            $addEOF,
                         );
                     }
                 } finally {
@@ -262,7 +261,7 @@ class LL1Analyzer
                         $lookBusy,
                         $calledRuleStack,
                         $seeThruPreds,
-                        $addEOF
+                        $addEOF,
                     );
                 } finally {
                     $calledRuleStack->remove($t->target->ruleIndex);
@@ -277,7 +276,7 @@ class LL1Analyzer
                         $lookBusy,
                         $calledRuleStack,
                         $seeThruPreds,
-                        $addEOF
+                        $addEOF,
                     );
                 } else {
                     $look->addOne(self::HIT_PRED);
@@ -291,7 +290,7 @@ class LL1Analyzer
                     $lookBusy,
                     $calledRuleStack,
                     $seeThruPreds,
-                    $addEOF
+                    $addEOF,
                 );
             } elseif ($t instanceof WildcardTransition) {
                 $look->addRange(Token::MIN_USER_TOKEN_TYPE, $this->atn->maxTokenType);
@@ -302,7 +301,7 @@ class LL1Analyzer
                     if ($t instanceof NotSetTransition) {
                         $set = $set->complement(IntervalSet::fromRange(
                             Token::MIN_USER_TOKEN_TYPE,
-                            $this->atn->maxTokenType
+                            $this->atn->maxTokenType,
                         ));
                     }
 

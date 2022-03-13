@@ -8,5 +8,5 @@ use Antlr\Antlr4\Runtime\Token;
 
 interface TerminalNode extends ParseTree
 {
-    public function getSymbol() : Token;
+    public function getSymbol(): Token;
 }

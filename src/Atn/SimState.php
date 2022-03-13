@@ -24,19 +24,15 @@ use Antlr\Antlr4\Runtime\Dfa\DFAState;
  */
 final class SimState
 {
-    /** @var int */
-    private $index = -1;
+    private int $index = -1;
 
-    /** @var int */
-    private $line = 0;
+    private int $line = 0;
 
-    /** @var int */
-    private $charPos = -1;
+    private int $charPos = -1;
 
-    /** @var DFAState|null */
-    private $dfaState;
+    private ?DFAState $dfaState = null;
 
-    public function reset() : void
+    public function reset(): void
     {
         $this->index = -1;
         $this->line = 0;
@@ -44,42 +40,42 @@ final class SimState
         $this->dfaState = null;
     }
 
-    public function getIndex() : int
+    public function getIndex(): int
     {
         return $this->index;
     }
 
-    public function setIndex(int $index) : void
+    public function setIndex(int $index): void
     {
         $this->index = $index;
     }
 
-    public function getLine() : int
+    public function getLine(): int
     {
         return $this->line;
     }
 
-    public function setLine(int $line) : void
+    public function setLine(int $line): void
     {
         $this->line = $line;
     }
 
-    public function getCharPos() : int
+    public function getCharPos(): int
     {
         return $this->charPos;
     }
 
-    public function setCharPos(int $charPos) : void
+    public function setCharPos(int $charPos): void
     {
         $this->charPos = $charPos;
     }
 
-    public function getDfaState() : ?DFAState
+    public function getDfaState(): ?DFAState
     {
         return $this->dfaState;
     }
 
-    public function setDfaState(?DFAState $dfaState) : void
+    public function setDfaState(?DFAState $dfaState): void
     {
         $this->dfaState = $dfaState;
     }

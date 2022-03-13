@@ -37,11 +37,9 @@ use Antlr\Antlr4\Runtime\Comparison\Hasher;
  */
 final class DFAState implements Hashable
 {
-    /** @var int */
-    public $stateNumber;
+    public int $stateNumber;
 
-    /** @var ATNConfigSet */
-    public $configs;
+    public ATNConfigSet $configs;
 
     /**
      * `edges[symbol]` points to target of symbol. Shift up by 1 so (-1)
@@ -49,32 +47,26 @@ final class DFAState implements Hashable
      *
      * @var \SplFixedArray<DFAState>|null
      */
-    public $edges;
+    public ?\SplFixedArray $edges = null;
 
-    /** @var bool */
-    public $isAcceptState = false;
+    public bool $isAcceptState = false;
 
     /**
      * If accept state, what ttype do we match or alt do we predict?
      * This is set to {@see ATN::INVALID_ALT_NUMBER)} when
      * `{@see DFAState::$predicates} !== null` or {@see DFAState::$requiresFullContext}.
-     *
-     * @var int
      */
-    public $prediction = 0;
+    public int $prediction = 0;
 
-    /** @var LexerActionExecutor|null */
-    public $lexerActionExecutor;
+    public ?LexerActionExecutor $lexerActionExecutor = null;
 
     /**
      * Indicates that this state was created during SLL prediction that
      * discovered a conflict between the configurations in the state. Future
      * {@see ParserATNSimulator::execATN()} invocations immediately jumped doing
      * full context prediction if this field is true.
-     *
-     * @var bool
      */
-    public $requiresFullContext = false;
+    public bool $requiresFullContext = false;
 
     /**
      * During SLL parsing, this is a list of predicates associated with the
@@ -91,7 +83,7 @@ final class DFAState implements Hashable
      *
      * @var array<PredPrediction>|null
      */
-    public $predicates;
+    public ?array $predicates = null;
 
     public function __construct(?ATNConfigSet $configs = null, int $stateNumber = -1)
     {
@@ -112,7 +104,7 @@ final class DFAState implements Hashable
      * exists that has this exact set of ATN configurations. The
      * {@see DFAState::$stateNumber} is irrelevant.
      */
-    public function equals(object $other) : bool
+    public function equals(object $other): bool
     {
         if ($this === $other) {
             return true;
@@ -126,7 +118,7 @@ final class DFAState implements Hashable
         return Equality::equals($this->configs, $other->configs);
     }
 
-    public function __toString() : string
+    public function __toString(): string
     {
         $s = \sprintf('%d:%s', $this->stateNumber, (string) $this->configs);
 
@@ -143,7 +135,7 @@ final class DFAState implements Hashable
         return $s;
     }
 
-    public function hashCode() : int
+    public function hashCode(): int
     {
         return Hasher::hash($this->configs);
     }

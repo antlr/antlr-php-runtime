@@ -20,11 +20,11 @@ final class LexerSkipAction implements LexerAction
     /**
      * Provides a singleton instance of this parameterless lexer action.
      */
-    public static function instance() : self
+    public static function instance(): self
     {
         static $instance;
 
-        return $instance = $instance ?? new self();
+        return $instance ??= new self();
     }
 
     /**
@@ -32,7 +32,7 @@ final class LexerSkipAction implements LexerAction
      *
      * @return int This method returns {@see LexerActionType::SKIP}.
      */
-    public function getActionType() : int
+    public function getActionType(): int
     {
         return LexerActionType::SKIP;
     }
@@ -42,7 +42,7 @@ final class LexerSkipAction implements LexerAction
      *
      * @return bool This method returns `false`.
      */
-    public function isPositionDependent() : bool
+    public function isPositionDependent(): bool
     {
         return false;
     }
@@ -52,17 +52,17 @@ final class LexerSkipAction implements LexerAction
      *
      * This action is implemented by calling {@see Lexer::skip()}.
      */
-    public function execute(Lexer $lexer) : void
+    public function execute(Lexer $lexer): void
     {
         $lexer->skip();
     }
 
-    public function hashCode() : int
+    public function hashCode(): int
     {
         return Hasher::hash($this->getActionType());
     }
 
-    public function equals(object $other) : bool
+    public function equals(object $other): bool
     {
         if ($this === $other) {
             return true;
@@ -71,7 +71,7 @@ final class LexerSkipAction implements LexerAction
         return $other instanceof self;
     }
 
-    public function __toString() : string
+    public function __toString(): string
     {
         return 'skip';
     }

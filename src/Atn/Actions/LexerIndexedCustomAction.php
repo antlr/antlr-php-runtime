@@ -21,11 +21,9 @@ use Antlr\Antlr4\Runtime\Lexer;
  */
 final class LexerIndexedCustomAction implements LexerAction
 {
-    /** @var int */
-    private $offset;
+    private int $offset;
 
-    /** @var LexerAction */
-    private $action;
+    private LexerAction $action;
 
     /**
      * Constructs a new indexed custom action by associating a character offset
@@ -54,7 +52,7 @@ final class LexerIndexedCustomAction implements LexerAction
      * @return int The location in the input {@see CharStream} at which the lexer
      *             action should be executed.
      */
-    public function getOffset() : int
+    public function getOffset(): int
     {
         return $this->offset;
     }
@@ -64,7 +62,7 @@ final class LexerIndexedCustomAction implements LexerAction
      *
      * @return LexerAction A {@see LexerAction} object which executes the lexer action.
      */
-    public function getAction() : LexerAction
+    public function getAction(): LexerAction
     {
         return $this->action;
     }
@@ -77,7 +75,7 @@ final class LexerIndexedCustomAction implements LexerAction
      *             {@see LexerAction} returned by
      *             {@see LexerIndexedCustomAction::getAction()}.
      */
-    public function getActionType() : int
+    public function getActionType(): int
     {
         return $this->action->getActionType();
     }
@@ -87,7 +85,7 @@ final class LexerIndexedCustomAction implements LexerAction
      *
      * @return bool This method returns `true`.
      */
-    public function isPositionDependent() : bool
+    public function isPositionDependent(): bool
     {
         return true;
     }
@@ -98,18 +96,18 @@ final class LexerIndexedCustomAction implements LexerAction
      * This method calls {@see LexerIndexedCustomAction::execute()} on the result
      * of {@see LexerIndexedCustomAction::getAction()} using the provided `lexer`.
      */
-    public function execute(Lexer $lexer) : void
+    public function execute(Lexer $lexer): void
     {
         // assume the input stream position was properly set by the calling code
         $this->action->execute($lexer);
     }
 
-    public function hashCode() : int
+    public function hashCode(): int
     {
         return Hasher::hash($this->getActionType(), $this->offset, $this->action);
     }
 
-    public function equals(object $other) : bool
+    public function equals(object $other): bool
     {
         if ($this === $other) {
             return true;
