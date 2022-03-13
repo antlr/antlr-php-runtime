@@ -1,5 +1,5 @@
 # ANTLR4 Runtime for PHP
-[![Travis CI](https://api.travis-ci.org/antlr/antlr-php-runtime.svg?branch=master)](https://travis-ci.org/antlr/antlr-php-runtime)
+[![Build](https://github.com/antlr/antlr-php-runtime/actions/workflows/branch-validations.yaml/badge.svg)](https://github.com/antlr/antlr-php-runtime/actions/workflows/branch-validations.yaml)
 [![Latest Stable Version](https://poser.pugx.org/antlr/antlr4-php-runtime/v/stable)](https://packagist.org/packages/antlr/antlr4-php-runtime)
 [![License](https://poser.pugx.org/antlr/antlr4-php-runtime/license)](https://packagist.org/packages/antlr/antlr4-php-runtime)
 
