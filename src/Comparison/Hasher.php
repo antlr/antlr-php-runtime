@@ -8,9 +8,10 @@ final class Hasher
 {
     private function __construct()
     {
+        // Prevent instantiation
     }
 
-    public static function hash(...$values) : int
+    public static function hash(mixed ...$values): int
     {
         return self::hashArray($values);
     }
@@ -18,7 +19,7 @@ final class Hasher
     /**
      * @param array<mixed> $values
      */
-    private static function hashArray(array $values) : int
+    private static function hashArray(array $values): int
     {
         $result = 1;
         foreach ($values as $value) {
@@ -29,10 +30,10 @@ final class Hasher
         return $result;
     }
 
-    public static function hashValue($value) : int
+    public static function hashValue(mixed $value): int
     {
-        if ($value === null) {
-            return 0;
+        if (\is_string($value)) {
+            return \crc32($value);
         }
 
         if (\is_int($value)) {
@@ -55,6 +56,7 @@ final class Hasher
             return (int) $value;
         }
 
-        return \crc32((string) $value);
+        // Null
+        return 0;
     }
 }

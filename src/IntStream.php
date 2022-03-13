@@ -52,7 +52,7 @@ interface IntStream
      * filtering streams (e.g. {@see CommonTokenStream} which distinguishes
      * between "on-channel" and "off-channel" tokens).
      */
-    public function consume() : void;
+    public function consume(): void;
 
     /**
      * Gets the value of the symbol at offset `i` from the current
@@ -83,7 +83,7 @@ interface IntStream
      * {@see IntStream::consume consume()} have occurred from the beginning of
      * the stream before calling this method.
      */
-    public function LA(int $i) : int;
+    public function LA(int $i): int;
 
     /**
      * A mark provides a guarantee that {@see IntStream::seek seek()} operations
@@ -131,7 +131,7 @@ interface IntStream
      *             {@see IntStream::release()} when the marked range
      *             is no longer required.
      */
-    public function mark() : int;
+    public function mark(): int;
 
     /**
      * This method releases a marked range created by a call to
@@ -146,7 +146,7 @@ interface IntStream
      *
      * @see IntStream::mark
      */
-    public function release(int $marker) : void;
+    public function release(int $marker): void;
 
     /**
      * Return the index into the stream of the input symbol referred to by `LA(1)`.
@@ -155,7 +155,7 @@ interface IntStream
      * {@see IntStream::initializing()} has occurred after this stream was
      * constructed.
      */
-    public function getIndex() : int;
+    public function getIndex(): int;
 
     /**
      * Set the input cursor to the position indicated by `index`. If the
@@ -179,18 +179,18 @@ interface IntStream
      *
      * @param int $index The absolute index to seek to.
      */
-    public function seek(int $index) : void;
+    public function seek(int $index): void;
 
     /**
      * Returns the total number of symbols in the stream, including a single EOF
      * symbol.
      */
-    public function getLength() : int;
+    public function getLength(): int;
 
     /**
      * Gets the name of the underlying symbol source. This method returns a
      * non-null, non-empty string. If such a name is not known, this method
      * returns {@see IntStream::UNKNOWN_SOURCE_NAME}.
      */
-    public function getSourceName() : string;
+    public function getSourceName(): string;
 }

@@ -26,11 +26,11 @@ interface TokenFactory
         int $start,
         int $stop,
         int $line,
-        int $charPositionInLine
-    ) : Token;
+        int $charPositionInLine,
+    ): Token;
 
     /**
      * Generically useful.
      */
-    public function create(int $type, string $text) : Token;
+    public function create(int $type, string $text): Token;
 }

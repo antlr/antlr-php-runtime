@@ -60,19 +60,15 @@ class RuleContext implements RuleNode
 {
     /**
      * The context that invoked this rule.
-     *
-     * @var RuleContext|null
      */
-    public $parentCtx;
+    public ?RuleContext $parentCtx = null;
 
     /**
      * What state invoked the rule associated with this context?
      * The "return address" is the followState of invokingState. If parent
      * is null, this should be -1 this context object represents the start rule.
-     *
-     * @var int
      */
-    public $invokingState = -1;
+    public int $invokingState = -1;
 
     public function __construct(?RuleContext $parent, ?int $invokingState = null)
     {
@@ -80,14 +76,14 @@ class RuleContext implements RuleNode
         $this->invokingState = $invokingState ?? -1;
     }
 
-    public static function emptyContext() : ParserRuleContext
+    public static function emptyContext(): ParserRuleContext
     {
         static $empty;
 
         return $empty ?? ($empty = new ParserRuleContext(null));
     }
 
-    public function depth() : int
+    public function depth(): int
     {
         $n = 0;
         $p = $this;
@@ -104,22 +100,22 @@ class RuleContext implements RuleNode
      * A context is empty if there is no invoking state; meaning nobody call
      * current context.
      */
-    public function isEmpty() : bool
+    public function isEmpty(): bool
     {
         return $this->invokingState === -1;
     }
 
-    public function getSourceInterval() : Interval
+    public function getSourceInterval(): Interval
     {
         return Interval::invalid();
     }
 
-    public function getRuleContext() : RuleContext
+    public function getRuleContext(): RuleContext
     {
         return $this;
     }
 
-    public function getPayload() : RuleContext
+    public function getPayload(): RuleContext
     {
         return $this;
     }
@@ -132,7 +128,7 @@ class RuleContext implements RuleNode
      * added to the parse trees, they will not appear in the output
      * of this method.
      */
-    public function getText() : string
+    public function getText(): string
     {
         $text = '';
 
@@ -147,7 +143,7 @@ class RuleContext implements RuleNode
         return $text;
     }
 
-    public function getRuleIndex() : int
+    public function getRuleIndex(): int
     {
         return -1;
     }
@@ -159,7 +155,7 @@ class RuleContext implements RuleNode
      * {@see ParserRuleContext} with backing field and set option
      * `contextSuperClass` to set it.
      */
-    public function getAltNumber() : int
+    public function getAltNumber(): int
     {
         return ATN::INVALID_ALT_NUMBER;
     }
@@ -170,19 +166,20 @@ class RuleContext implements RuleNode
      * that don't need it. Create a subclass of {@see ParserRuleContext} with backing
      * field and set option `contextSuperClass`.
      */
-    public function setAltNumber(int $altNumber) : void
+    public function setAltNumber(int $altNumber): void
     {
+        // Override as needed
     }
 
     /**
      * @return RuleContext|null
      */
-    public function getParent() : ?Tree
+    public function getParent(): ?Tree
     {
         return $this->parentCtx;
     }
 
-    public function setParent(?RuleContext $ctx) : void
+    public function setParent(?RuleContext $ctx): void
     {
         $this->parentCtx = $ctx;
     }
@@ -190,17 +187,17 @@ class RuleContext implements RuleNode
     /**
      * @return ParseTree|null
      */
-    public function getChild(int $i, ?string $type = null) : ?Tree
+    public function getChild(int $i, ?string $type = null): ?Tree
     {
         return null;
     }
 
-    public function getChildCount() : int
+    public function getChildCount(): int
     {
         return 0;
     }
 
-    public function accept(ParseTreeVisitor $visitor)
+    public function accept(ParseTreeVisitor $visitor): mixed
     {
         return $visitor->visitChildren($this);
     }
@@ -211,12 +208,12 @@ class RuleContext implements RuleNode
      *
      * @param array<string>|null $ruleNames
      */
-    public function toStringTree(?array $ruleNames = null) : string
+    public function toStringTree(?array $ruleNames = null): string
     {
         return Trees::toStringTree($this, $ruleNames);
     }
 
-    public function __toString() : string
+    public function __toString(): string
     {
         return $this->toString();
     }
@@ -224,7 +221,7 @@ class RuleContext implements RuleNode
     /**
      * @param array<string>|null $ruleNames
      */
-    public function toString(?array $ruleNames = null, ?RuleContext $stop = null) : string
+    public function toString(?array $ruleNames = null, ?RuleContext $stop = null): string
     {
         $p = $this;
         $string = '[';

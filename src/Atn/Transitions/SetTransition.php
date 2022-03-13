@@ -13,8 +13,7 @@ use Antlr\Antlr4\Runtime\Token;
  */
 class SetTransition extends Transition
 {
-    /** @var IntervalSet */
-    public $set;
+    public IntervalSet $set;
 
     public function __construct(ATNState $target, ?IntervalSet $set = null)
     {
@@ -28,22 +27,22 @@ class SetTransition extends Transition
         }
     }
 
-    public function matches(int $symbol, int $minVocabSymbol, int $maxVocabSymbol) : bool
+    public function matches(int $symbol, int $minVocabSymbol, int $maxVocabSymbol): bool
     {
         return $this->set->contains($symbol);
     }
 
-    public function label() : ?IntervalSet
+    public function label(): ?IntervalSet
     {
         return $this->set;
     }
 
-    public function getSerializationType() : int
+    public function getSerializationType(): int
     {
         return self::SET;
     }
 
-    public function equals(object $other) : bool
+    public function equals(object $other): bool
     {
         if ($this === $other) {
             return true;
@@ -54,7 +53,7 @@ class SetTransition extends Transition
             && $this->target->equals($other->target);
     }
 
-    public function __toString() : string
+    public function __toString(): string
     {
         return (string) $this->set;
     }

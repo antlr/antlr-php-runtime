@@ -10,11 +10,9 @@ use Antlr\Antlr4\Runtime\Comparison\Hasher;
 
 final class Pair implements Equatable
 {
-    /** @var object|null */
-    public $a;
+    public ?object $a = null;
 
-    /** @var object|null */
-    public $b;
+    public ?object $b = null;
 
     public function __construct(?object $a, ?object $b)
     {
@@ -22,7 +20,7 @@ final class Pair implements Equatable
         $this->b = $b;
     }
 
-    public function equals(object $other) : bool
+    public function equals(object $other): bool
     {
         if ($other === $this) {
             return true;
@@ -33,12 +31,12 @@ final class Pair implements Equatable
             && Equality::equals($this->b, $other->b);
     }
 
-    public function hashCode() : int
+    public function hashCode(): int
     {
         return Hasher::hash($this->a, $this->b);
     }
 
-    public function __toString() : string
+    public function __toString(): string
     {
         return \sprintf('%s, %s', (string) $this->a, (string) $this->b);
     }

@@ -30,7 +30,7 @@ interface ANTLRErrorStrategy
      *
      * @param Parser $recognizer the parser instance
      */
-    public function reset(Parser $recognizer) : void;
+    public function reset(Parser $recognizer): void;
 
     /**
      * This method is called when an unexpected symbol is encountered during an
@@ -51,7 +51,7 @@ interface ANTLRErrorStrategy
      * @throws RecognitionException If the error strategy was not able to
      *                              recover from the unexpected input symbol.
      */
-    public function recoverInline(Parser $recognizer) : Token;
+    public function recoverInline(Parser $recognizer): Token;
 
     /**
      * This method is called to recover from exception `e`. This method is
@@ -67,7 +67,7 @@ interface ANTLRErrorStrategy
      *
      * @see ANTLRErrorStrategy::reportError
      */
-    public function recover(Parser $recognizer, RecognitionException $e) : void;
+    public function recover(Parser $recognizer, RecognitionException $e): void;
 
     /**
      * This method provides the error handler with an opportunity to handle
@@ -89,7 +89,7 @@ interface ANTLRErrorStrategy
      *
      * @see DefaultErrorStrategy::sync()
      */
-    public function sync(Parser $recognizer) : void;
+    public function sync(Parser $recognizer): void;
 
     /**
      * Tests whether or not `recognizer` is in the process of recovering
@@ -103,14 +103,14 @@ interface ANTLRErrorStrategy
      * @return bool `true` if the parser is currently recovering from a parse
      *               error, otherwise `false`.
      */
-    public function inErrorRecoveryMode(Parser $recognizer) : bool;
+    public function inErrorRecoveryMode(Parser $recognizer): bool;
 
     /**
      * This method is called by when the parser successfully matches an input symbol.
      *
      * @param Parser $recognizer The parser instance.
      */
-    public function reportMatch(Parser $recognizer) : void;
+    public function reportMatch(Parser $recognizer): void;
 
     /**
      * Report any kind of {@see RecognitionException}. This method is called by
@@ -119,5 +119,5 @@ interface ANTLRErrorStrategy
      * @param Parser               $recognizer The parser instance.
      * @param RecognitionException $e          The recognition exception to report.
      */
-    public function reportError(Parser $recognizer, RecognitionException $e) : void;
+    public function reportError(Parser $recognizer, RecognitionException $e): void;
 }

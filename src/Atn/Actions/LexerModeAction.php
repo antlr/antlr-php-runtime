@@ -9,8 +9,7 @@ use Antlr\Antlr4\Runtime\Lexer;
 
 final class LexerModeAction implements LexerAction
 {
-    /** @var int */
-    private $mode;
+    private int $mode;
 
     /**
      * Constructs a new `mode` action with the specified mode value.
@@ -27,7 +26,7 @@ final class LexerModeAction implements LexerAction
      *
      * @return int The lexer mode for this `mode` command.
      */
-    public function getMode() : int
+    public function getMode(): int
     {
         return $this->mode;
     }
@@ -37,7 +36,7 @@ final class LexerModeAction implements LexerAction
      *
      * @return int This method returns {@see LexerActionType::MODE}.
      */
-    public function getActionType() : int
+    public function getActionType(): int
     {
         return LexerActionType::MODE;
     }
@@ -47,7 +46,7 @@ final class LexerModeAction implements LexerAction
      *
      * @return bool This method returns `false`.
      */
-    public function isPositionDependent() : bool
+    public function isPositionDependent(): bool
     {
         return false;
     }
@@ -58,17 +57,17 @@ final class LexerModeAction implements LexerAction
      * This action is implemented by calling {@see Lexer::mode()} with the
      * value provided by {@see LexerModeAction::getMode()}.
      */
-    public function execute(Lexer $lexer) : void
+    public function execute(Lexer $lexer): void
     {
         $lexer->mode($this->mode);
     }
 
-    public function hashCode() : int
+    public function hashCode(): int
     {
         return Hasher::hash($this->getActionType(), $this->mode);
     }
 
-    public function equals(object $other) : bool
+    public function equals(object $other): bool
     {
         if ($this === $other) {
             return true;
@@ -81,7 +80,7 @@ final class LexerModeAction implements LexerAction
         return $this->mode === $other->mode;
     }
 
-    public function __toString() : string
+    public function __toString(): string
     {
         return \sprintf('mode(%d)', $this->mode);
     }

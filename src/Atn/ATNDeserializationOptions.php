@@ -6,16 +6,13 @@ namespace Antlr\Antlr4\Runtime\Atn;
 
 final class ATNDeserializationOptions
 {
-    /** @var bool */
-    private $readOnly = false;
+    private bool $readOnly = false;
 
-    /** @var bool */
-    private $verifyATN;
+    private bool $verifyATN;
 
-    /** @var bool */
-    private $generateRuleBypassTransitions;
+    private bool $generateRuleBypassTransitions;
 
-    public static function defaultOptions() : ATNDeserializationOptions
+    public static function defaultOptions(): ATNDeserializationOptions
     {
         static $defaultOptions;
 
@@ -33,22 +30,22 @@ final class ATNDeserializationOptions
         $this->generateRuleBypassTransitions = $options === null ? false : $options->generateRuleBypassTransitions;
     }
 
-    public function isReadOnly() : bool
+    public function isReadOnly(): bool
     {
         return $this->readOnly;
     }
 
-    public function makeReadOnly() : void
+    public function makeReadOnly(): void
     {
         $this->readOnly = true;
     }
 
-    public function isVerifyATN() : bool
+    public function isVerifyATN(): bool
     {
         return $this->verifyATN;
     }
 
-    public function setVerifyATN(bool $verifyATN) : void
+    public function setVerifyATN(bool $verifyATN): void
     {
         if ($this->readOnly) {
             throw new \InvalidArgumentException('The object is read only.');
@@ -57,12 +54,12 @@ final class ATNDeserializationOptions
         $this->verifyATN = $verifyATN;
     }
 
-    public function isGenerateRuleBypassTransitions() : bool
+    public function isGenerateRuleBypassTransitions(): bool
     {
         return $this->generateRuleBypassTransitions;
     }
 
-    public function setGenerateRuleBypassTransitions(bool $generateRuleBypassTransitions) : void
+    public function setGenerateRuleBypassTransitions(bool $generateRuleBypassTransitions): void
     {
         if ($this->readOnly) {
             throw new \InvalidArgumentException('The object is read only.');

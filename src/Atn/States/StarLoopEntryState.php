@@ -6,8 +6,7 @@ namespace Antlr\Antlr4\Runtime\Atn\States;
 
 final class StarLoopEntryState extends DecisionState
 {
-    /** @var StarLoopbackState|null */
-    public $loopBackState;
+    public ?StarLoopbackState $loopBackState = null;
 
     /**
      * Indicates whether this state can benefit from a precedence DFA during SLL
@@ -17,12 +16,10 @@ final class StarLoopEntryState extends DecisionState
      * and stored for use in {@see ParserATNSimulator} and {@see ParserInterpreter}.
      *
      * @see DFA::isPrecedenceDfa()
-     *
-     * @var bool
      */
-    public $isPrecedenceDecision = false;
+    public bool $isPrecedenceDecision = false;
 
-    public function getStateType() : int
+    public function getStateType(): int
     {
         return self::STAR_LOOP_ENTRY;
     }

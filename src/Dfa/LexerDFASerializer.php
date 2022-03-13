@@ -14,7 +14,7 @@ final class LexerDFASerializer extends DFASerializer
         parent::__construct($dfa, new VocabularyImpl());
     }
 
-    protected function getEdgeLabel(int $i) : string
+    protected function getEdgeLabel(int $i): string
     {
         return \sprintf('\'%s\'', StringUtils::char($i));
     }

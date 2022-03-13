@@ -15,22 +15,17 @@ abstract class Recognizer
     public const EOF = -1;
 
     /** @var array<string> */
-    public $log = [];
+    public array $log = [];
 
     /** @var array<string, array<string, int>> */
-    private static $tokenTypeMapCache = [];
-
-    /** @var array<string, array<int, string>> */
-    private static $ruleIndexMapCache = [];
+    private static array $tokenTypeMapCache = [];
 
     /** @var array<ANTLRErrorListener> */
-    private $listeners;
+    private array $listeners;
 
-    /** @var ATNSimulator|null */
-    protected $interp;
+    protected ?ATNSimulator $interp = null;
 
-    /** @var int */
-    private $stateNumber = -1;
+    private int $stateNumber = -1;
 
     public function __construct()
     {
@@ -43,7 +38,7 @@ abstract class Recognizer
      * @return Vocabulary A {@see Vocabulary} instance providing information
      *                    about the vocabulary used by the grammar.
      */
-    abstract public function getVocabulary() : Vocabulary;
+    abstract public function getVocabulary(): Vocabulary;
 
     /**
      * Get a map from token names to token types.
@@ -52,7 +47,7 @@ abstract class Recognizer
      *
      * @return array<string, int>
      */
-    public function getTokenTypeMap() : array
+    public function getTokenTypeMap(): array
     {
         $vocabulary = $this->getVocabulary();
 
@@ -89,20 +84,14 @@ abstract class Recognizer
      *
      * Used for XPath and tree pattern compilation.
      *
-     * @return array<int, string>|null
+     * @return array<string, int>
      */
-    public function getRuleIndexMap() : ?array
+    public function getRuleIndexMap(): array
     {
-        $result = self::$ruleIndexMapCache[static::class] ?? null;
-
-        if ($result === null) {
-            self::$ruleIndexMapCache[static::class] = $this->getRuleNames();
-        }
-
-        return $result;
+        return \array_flip($this->getRuleNames());
     }
 
-    public function getTokenType(string $tokenName) : int
+    public function getTokenType(string $tokenName): int
     {
         $map = $this->getTokenTypeMap();
 
@@ -116,7 +105,7 @@ abstract class Recognizer
      *
      * @return array<int>
      */
-    public function getSerializedATN() : array
+    public function getSerializedATN(): array
     {
         throw new \InvalidArgumentException('there is no serialized ATN');
     }
@@ -127,15 +116,15 @@ abstract class Recognizer
      * @return ATNSimulator|null The ATN interpreter used by the recognizer
      *                           for prediction.
      */
-    public function getInterpreter() : ?ATNSimulator
+    public function getInterpreter(): ?ATNSimulator
     {
         return $this->interp;
     }
 
-    protected function interpreter() : ATNSimulator
+    protected function interpreter(): ATNSimulator
     {
         if ($this->interp === null) {
-            throw new \RuntimeException('Unexpected null interpreter.');
+            throw new \LogicException('Unexpected null interpreter.');
         }
 
         return $this->interp;
@@ -147,7 +136,7 @@ abstract class Recognizer
      * @param ATNSimulator|null $interpreter The ATN interpreter used
      *                                       by the recognizer for prediction.
      */
-    public function setInterpreter(?ATNSimulator $interpreter) : void
+    public function setInterpreter(?ATNSimulator $interpreter): void
     {
         $this->interp = $interpreter;
     }
@@ -155,7 +144,7 @@ abstract class Recognizer
     /**
      * What is the error header, normally line/character position information?
      */
-    public function getErrorHeader(RecognitionException $e) : string
+    public function getErrorHeader(RecognitionException $e): string
     {
         $token = $e->getOffendingToken();
 
@@ -166,17 +155,17 @@ abstract class Recognizer
         return \sprintf('line %d:%d', $token->getLine(), $token->getCharPositionInLine());
     }
 
-    public function addErrorListener(ANTLRErrorListener $listener) : void
+    public function addErrorListener(ANTLRErrorListener $listener): void
     {
         $this->listeners[] = $listener;
     }
 
-    public function removeErrorListeners() : void
+    public function removeErrorListeners(): void
     {
         $this->listeners = [];
     }
 
-    public function getErrorListenerDispatch() : ANTLRErrorListener
+    public function getErrorListenerDispatch(): ANTLRErrorListener
     {
         return new ProxyErrorListener($this->listeners);
     }
@@ -185,21 +174,22 @@ abstract class Recognizer
      * Subclass needs to override these if there are sempreds or actions
      * that the ATN interp needs to execute
      */
-    public function sempred(?RuleContext $localctx, int $ruleIndex, int $actionIndex) : bool
+    public function sempred(?RuleContext $localctx, int $ruleIndex, int $actionIndex): bool
     {
         return true;
     }
 
-    public function precpred(RuleContext $localctx, int $precedence) : bool
+    public function precpred(RuleContext $localctx, int $precedence): bool
     {
         return true;
     }
 
-    public function action(?RuleContext $localctx, int $ruleIndex, int $actionIndex) : void
+    public function action(?RuleContext $localctx, int $ruleIndex, int $actionIndex): void
     {
+        // Overridden by subclasses
     }
 
-    public function getState() : int
+    public function getState(): int
     {
         return $this->stateNumber;
     }
@@ -212,25 +202,28 @@ abstract class Recognizer
      * invoking rules. Combine this and we have complete ATN
      * configuration information.
      */
-    public function setState(int $atnState) : void
+    public function setState(int $atnState): void
     {
         $this->stateNumber = $atnState;
     }
 
-    abstract public function getInputStream() : ?IntStream;
-    abstract public function setInputStream(IntStream $input) : void;
-    abstract public function getTokenFactory() : TokenFactory;
-    abstract public function setTokenFactory(TokenFactory $input) : void;
+    abstract public function getInputStream(): ?IntStream;
+
+    abstract public function setInputStream(IntStream $input): void;
+
+    abstract public function getTokenFactory(): TokenFactory;
+
+    abstract public function setTokenFactory(TokenFactory $input): void;
 
     /**
-     * @return array<int, string>
+     * @return array<string>
      */
-    abstract public function getRuleNames() : array;
+    abstract public function getRuleNames(): array;
 
     /**
      * Get the {@see ATN} used by the recognizer for prediction.
      *
      * @return ATN The {@see ATN} used by the recognizer for prediction.
      */
-    abstract public function getATN() : ATN;
+    abstract public function getATN(): ATN;
 }

@@ -24,14 +24,14 @@ abstract class SemanticContext implements Hashable
      * The default {@see SemanticContext}, which is semantically equivalent to
      * a predicate of the form `{true}?`.
      */
-    public static function none() : Predicate
+    public static function none(): Predicate
     {
         static $none;
 
-        return $none = $none ?? new Predicate();
+        return $none ??= new Predicate();
     }
 
-    public static function andContext(?self $a, ?self $b) : ?self
+    public static function andContext(?self $a, ?self $b): ?self
     {
         if ($a === null || $a === self::none()) {
             return $b;
@@ -46,7 +46,7 @@ abstract class SemanticContext implements Hashable
         return \count($result->operands) === 1 ? $result->operands[0] : $result;
     }
 
-    public static function orContext(?self $a, ?self $b) : ?self
+    public static function orContext(?self $a, ?self $b): ?self
     {
         if ($a === null) {
             return $b;
@@ -78,7 +78,7 @@ abstract class SemanticContext implements Hashable
      * prediction, so we passed in the outer context here in case of context
      * dependent predicate evaluation.
      */
-    abstract public function eval(Recognizer $parser, RuleContext $parserCallStack);
+    abstract public function eval(Recognizer $parser, RuleContext $parserCallStack): bool;
 
     /**
      * Evaluate the precedence predicates for the context and reduce the result.
@@ -97,7 +97,7 @@ abstract class SemanticContext implements Hashable
      *                   - A non-`null` {@see SemanticContext}: if the new simplified
      *                      semantic context after precedence predicates are evaluated.
      */
-    public function evalPrecedence(Recognizer $parser, RuleContext $parserCallStack) : ?self
+    public function evalPrecedence(Recognizer $parser, RuleContext $parserCallStack): ?self
     {
         return $this;
     }
@@ -105,7 +105,7 @@ abstract class SemanticContext implements Hashable
     /**
      * @return array<PrecedencePredicate>
      */
-    public static function filterPrecedencePredicates(Set $set) : array
+    public static function filterPrecedencePredicates(Set $set): array
     {
         $result = [];
         foreach ($set->getValues() as $context) {
@@ -117,5 +117,5 @@ abstract class SemanticContext implements Hashable
         return $result;
     }
 
-    abstract public function __toString() : string;
+    abstract public function __toString(): string;
 }

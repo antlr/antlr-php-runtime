@@ -12,38 +12,36 @@ use Antlr\Antlr4\Runtime\PredictionContexts\PredictionContext;
 
 final class LexerATNConfig extends ATNConfig
 {
-    /** @var LexerActionExecutor|null */
-    private $lexerActionExecutor;
+    private ?LexerActionExecutor $lexerActionExecutor = null;
 
-    /** @var bool */
-    private $passedThroughNonGreedyDecision;
+    private bool $passedThroughNonGreedyDecision;
 
     public function __construct(
         ?self $oldConfig,
         ?ATNState $state,
         ?PredictionContext $context = null,
         ?LexerActionExecutor $executor = null,
-        ?int $alt = null
+        ?int $alt = null,
     ) {
         parent::__construct($oldConfig, $state, $context, null, $alt);
 
         $this->lexerActionExecutor = $executor ?? ($oldConfig->lexerActionExecutor ?? null);
-        $this->passedThroughNonGreedyDecision = $oldConfig ?
+        $this->passedThroughNonGreedyDecision = $oldConfig !== null ?
             self::checkNonGreedyDecision($oldConfig, $this->state) :
             false;
     }
 
-    public function getLexerActionExecutor() : ?LexerActionExecutor
+    public function getLexerActionExecutor(): ?LexerActionExecutor
     {
         return $this->lexerActionExecutor;
     }
 
-    public function isPassedThroughNonGreedyDecision() : bool
+    public function isPassedThroughNonGreedyDecision(): bool
     {
         return $this->passedThroughNonGreedyDecision;
     }
 
-    public function hashCode() : int
+    public function hashCode(): int
     {
         return Hasher::hash(
             $this->state->stateNumber,
@@ -51,11 +49,11 @@ final class LexerATNConfig extends ATNConfig
             $this->context,
             $this->semanticContext,
             $this->passedThroughNonGreedyDecision,
-            $this->lexerActionExecutor
+            $this->lexerActionExecutor,
         );
     }
 
-    public function equals(object $other) : bool
+    public function equals(object $other): bool
     {
         if ($this === $other) {
             return true;
@@ -76,7 +74,7 @@ final class LexerATNConfig extends ATNConfig
         return Equality::equals($this->lexerActionExecutor, $other->lexerActionExecutor);
     }
 
-    private static function checkNonGreedyDecision(LexerATNConfig $source, ATNState $target) : bool
+    private static function checkNonGreedyDecision(LexerATNConfig $source, ATNState $target): bool
     {
         return $source->passedThroughNonGreedyDecision || ($target instanceof DecisionState && $target->nonGreedy);
     }

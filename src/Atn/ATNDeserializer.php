@@ -42,26 +42,17 @@ use Antlr\Antlr4\Runtime\Atn\Transitions\Transition;
 use Antlr\Antlr4\Runtime\Atn\Transitions\WildcardTransition;
 use Antlr\Antlr4\Runtime\IntervalSet;
 use Antlr\Antlr4\Runtime\Token;
-use Antlr\Antlr4\Runtime\Utils\StringUtils;
 
 final class ATNDeserializer
 {
     public const SERIALIZED_VERSION = 4;
 
-    /** @var ATNDeserializationOptions */
-    private $deserializationOptions;
+    private ATNDeserializationOptions $deserializationOptions;
 
     /** @var array<int> */
-    private $data = [];
+    private array $data = [];
 
-    /** @var int */
-    private $pos = 0;
-
-    /** @var array<int, callable|null>|null */
-    private $stateFactories;
-
-    /** @var array<int, callable|null>|null */
-    private $actionFactories;
+    private int $pos = 0;
 
     public function __construct(?ATNDeserializationOptions $options = null)
     {
@@ -71,7 +62,7 @@ final class ATNDeserializer
     /**
      * @param array<int> $data
      */
-    public function deserialize(array $data) : ATN
+    public function deserialize(array $data): ATN
     {
         $this->data = $data;
         $this->pos = 0;
@@ -109,7 +100,7 @@ final class ATNDeserializer
         return $atn;
     }
 
-    private function checkVersion() : void
+    private function checkVersion(): void
     {
         $version = $this->readInt();
 
@@ -117,12 +108,12 @@ final class ATNDeserializer
             throw new \InvalidArgumentException(\sprintf(
                 'Could not deserialize ATN with version %d (expected %d).',
                 $version,
-                self::SERIALIZED_VERSION
+                self::SERIALIZED_VERSION,
             ));
         }
     }
 
-    private function readATN() : ATN
+    private function readATN(): ATN
     {
         $grammarType = $this->readInt();
         $maxTokenType = $this->readInt();
@@ -130,7 +121,7 @@ final class ATNDeserializer
         return new ATN($grammarType, $maxTokenType);
     }
 
-    private function readStates(ATN $atn) : void
+    private function readStates(ATN $atn): void
     {
         $loopBackStateNumbers = [];
         $endStateNumbers = [];
@@ -159,7 +150,7 @@ final class ATNDeserializer
                 $loopBackStateNumber = $this->readInt();
 
                 if (!$s instanceof LoopEndState) {
-                    throw new \RuntimeException('Unexpected ATN State');
+                    throw new \LogicException('Unexpected ATN State');
                 }
 
                 $loopBackStateNumbers[] = [$s, $loopBackStateNumber];
@@ -182,7 +173,7 @@ final class ATNDeserializer
             $endState = $atn->states[$pair[1]];
 
             if (!$endState instanceof BlockEndState) {
-                throw new \RuntimeException('Unexpected ATN State');
+                throw new \LogicException('Unexpected ATN State');
             }
 
             $pair[0]->endState = $endState;
@@ -194,7 +185,7 @@ final class ATNDeserializer
             $decisionState = $atn->states[$this->readInt()];
 
             if (!$decisionState instanceof DecisionState) {
-                throw new \RuntimeException('Unexpected ATN State');
+                throw new \LogicException('Unexpected ATN State');
             }
 
             $decisionState->nonGreedy = true;
@@ -206,14 +197,14 @@ final class ATNDeserializer
             $ruleStartState = $atn->states[$this->readInt()];
 
             if (!$ruleStartState instanceof RuleStartState) {
-                throw new \RuntimeException('Unexpected ATN State');
+                throw new \LogicException('Unexpected ATN State');
             }
 
             $ruleStartState->isLeftRecursiveRule = true;
         }
     }
 
-    private function readRules(ATN $atn) : void
+    private function readRules(ATN $atn): void
     {
         $nRules = $this->readInt();
 
@@ -224,7 +215,7 @@ final class ATNDeserializer
             $startState = $atn->states[$s];
 
             if (!$startState instanceof RuleStartState) {
-                throw new \RuntimeException('Unexpected ATN State');
+                throw new \LogicException('Unexpected ATN State');
             }
 
             $atn->ruleToStartState[$i] = $startState;
@@ -251,7 +242,7 @@ final class ATNDeserializer
         }
     }
 
-    private function readModes(ATN $atn) : void
+    private function readModes(ATN $atn): void
     {
         $nmodes = $this->readInt();
 
@@ -259,7 +250,7 @@ final class ATNDeserializer
             $tokensStartState = $atn->states[$this->readInt()];
 
             if (!$tokensStartState instanceof TokensStartState) {
-                throw new \RuntimeException('Unexpected ATN State');
+                throw new \LogicException('Unexpected ATN State');
             }
 
             $atn->modeToStartState[] = $tokensStartState;
@@ -269,7 +260,7 @@ final class ATNDeserializer
     /**
      * @param array<IntervalSet> $sets
      */
-    private function readSets(array &$sets, callable $readUnicode) : void
+    private function readSets(array &$sets, callable $readUnicode): void
     {
         $m = $this->readInt();
 
@@ -295,7 +286,7 @@ final class ATNDeserializer
     /**
      * @param array<IntervalSet> $sets
      */
-    private function readEdges(ATN $atn, array &$sets) : void
+    private function readEdges(ATN $atn, array &$sets): void
     {
         $nEdges = $this->readInt();
 
@@ -334,12 +325,12 @@ final class ATNDeserializer
             if ($state instanceof BlockStartState) {
                 // we need to know the end state to set its start state
                 if ($state->endState === null) {
-                    throw new \RuntimeException('Unexpected null EndState.');
+                    throw new \LogicException('Unexpected null EndState.');
                 }
 
                 // block end states can only be associated to a single block start state
                 if ($state->endState->startState !== null) {
-                    throw new \RuntimeException('Unexpected null StartState.');
+                    throw new \LogicException('Unexpected null StartState.');
                 }
 
                 $state->endState->startState = $state;
@@ -365,7 +356,7 @@ final class ATNDeserializer
         }
     }
 
-    private function readDecisions(ATN $atn) : void
+    private function readDecisions(ATN $atn): void
     {
         $decisions = $this->readInt();
 
@@ -380,7 +371,7 @@ final class ATNDeserializer
         }
     }
 
-    private function readLexerActions(ATN $atn) : void
+    private function readLexerActions(ATN $atn): void
     {
         if ($atn->grammarType === ATN::ATN_TYPE_LEXER) {
             $count = $this->readInt();
@@ -406,7 +397,7 @@ final class ATNDeserializer
         }
     }
 
-    private function generateRuleBypassTransitions(ATN $atn) : void
+    private function generateRuleBypassTransitions(ATN $atn): void
     {
         $count = \count($atn->ruleToStartState);
 
@@ -419,7 +410,7 @@ final class ATNDeserializer
         }
     }
 
-    private function generateRuleBypassTransition(ATN $atn, int $idx) : void
+    private function generateRuleBypassTransition(ATN $atn, int $idx): void
     {
         $bypassStart = new BasicBlockStartState();
         $bypassStart->ruleIndex = $idx;
@@ -440,15 +431,15 @@ final class ATNDeserializer
             $endState = null;
 
             foreach ($atn->states as $state) {
-                if ($this->stateIsEndStateFor($state, $idx)) {
+                if ($this->stateIsEndStateFor($state, $idx) !== null) {
                     $endState = $state;
 
                     if (!$state instanceof LoopEndState) {
-                        throw new \RuntimeException('Unexpected state type.');
+                        throw new \LogicException('Unexpected state type.');
                     }
 
                     if ($state->loopBackState === null) {
-                        throw new \RuntimeException('Unexpected null loop back state.');
+                        throw new \LogicException('Unexpected null loop back state.');
                     }
 
                     $excludeTransition = $state->loopBackState->getTransition(0);
@@ -458,7 +449,7 @@ final class ATNDeserializer
             }
 
             if ($excludeTransition === null) {
-                throw new \RuntimeException('Couldn\'t identify final state of the precedence rule prefix section.');
+                throw new \LogicException('Couldn\'t identify final state of the precedence rule prefix section.');
             }
         } else {
             $endState = $atn->ruleToStopState[$idx];
@@ -491,7 +482,7 @@ final class ATNDeserializer
         $atn->ruleToStartState[$idx]->addTransition(new EpsilonTransition($bypassStart));
 
         if ($endState === null) {
-            throw new \RuntimeException('Unexpected null end state.');
+            throw new \LogicException('Unexpected null end state.');
         }
 
         $bypassStop->addTransition(new EpsilonTransition($endState));
@@ -502,7 +493,7 @@ final class ATNDeserializer
         $bypassStart->addTransition(new EpsilonTransition($matchState));
     }
 
-    private function stateIsEndStateFor(ATNState $state, int $idx) : ?ATNState
+    private function stateIsEndStateFor(ATNState $state, int $idx): ?ATNState
     {
         if ($state->ruleIndex !== $idx) {
             return null;
@@ -533,7 +524,7 @@ final class ATNDeserializer
      *
      * @param ATN $atn The ATN.
      */
-    private function markPrecedenceDecisions(ATN $atn) : void
+    private function markPrecedenceDecisions(ATN $atn): void
     {
         foreach ($atn->states as $state) {
             if (!$state instanceof StarLoopEntryState) {
@@ -556,7 +547,7 @@ final class ATNDeserializer
         }
     }
 
-    private function verifyATN(ATN $atn) : void
+    private function verifyATN(ATN $atn): void
     {
         if (!$this->deserializationOptions->isVerifyATN()) {
             return;
@@ -625,19 +616,19 @@ final class ATNDeserializer
         }
     }
 
-    private function checkCondition(?bool $condition, $message = 'IllegalState') : void
+    private function checkCondition(?bool $condition, string $message = 'IllegalState'): void
     {
         if ($condition === null) {
             throw new \InvalidArgumentException($message);
         }
     }
 
-    private function readInt() : int
+    private function readInt(): int
     {
         return $this->data[$this->pos++];
     }
 
-    private function readInt32() : int
+    private function readInt32(): int
     {
         $low = $this->readInt();
         $high = $this->readInt();
@@ -656,8 +647,8 @@ final class ATNDeserializer
         int $arg1,
         int $arg2,
         int $arg3,
-        array $sets
-    ) : Transition {
+        array $sets,
+    ): Transition {
         $target = $atn->states[$trg];
 
         switch ($type) {
@@ -673,7 +664,7 @@ final class ATNDeserializer
                 $ruleStart = $atn->states[$arg1];
 
                 if (!$ruleStart instanceof RuleStartState) {
-                    throw new \RuntimeException('Unexpected transition type.');
+                    throw new \LogicException('Unexpected transition type.');
                 }
 
                 return new RuleTransition($ruleStart, $arg2, $arg3, $target);
@@ -702,12 +693,12 @@ final class ATNDeserializer
             default:
                 throw new \InvalidArgumentException(\sprintf(
                     'The specified transition type: %d is not valid.',
-                    $type
+                    $type,
                 ));
         }
     }
 
-    private function stateFactory(int $type, int $ruleIndex) : ?ATNState
+    private function stateFactory(int $type, int $ruleIndex): ?ATNState
     {
         switch ($type) {
             case ATNState::INVALID_TYPE:
@@ -776,7 +767,7 @@ final class ATNDeserializer
             default:
                 throw new \InvalidArgumentException(\sprintf(
                     'The specified state type %d is not valid.',
-                    $type
+                    $type,
                 ));
         }
 
@@ -785,7 +776,7 @@ final class ATNDeserializer
         return $s;
     }
 
-    private function lexerActionFactory(int $type, int $data1, int $data2) : LexerAction
+    private function lexerActionFactory(int $type, int $data1, int $data2): LexerAction
     {
         switch ($type) {
             case LexerActionType::CHANNEL:
@@ -815,7 +806,7 @@ final class ATNDeserializer
             default:
                 throw new \InvalidArgumentException(\sprintf(
                     'The specified lexer action type %d is not valid.',
-                    $type
+                    $type,
                 ));
         }
     }

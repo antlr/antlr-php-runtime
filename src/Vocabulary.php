@@ -18,7 +18,7 @@ interface Vocabulary
      *
      * @return int The highest token type value.
      */
-    public function getMaxTokenType() : int;
+    public function getMaxTokenType(): int;
 
     /**
      * Gets the string literal associated with a token type. The string returned
@@ -39,7 +39,7 @@ interface Vocabulary
      * @return string The string literal associated with the specified token type,
      *                or `null` if no string literal is associated with the type.
      */
-    public function getLiteralName(int $tokenType) : ?string;
+    public function getLiteralName(int $tokenType): ?string;
 
     /**
      * Gets the symbolic name associated with a token type. The string returned
@@ -66,7 +66,7 @@ interface Vocabulary
      * @return string The symbolic name associated with the specified token type,
      *                or `null` if no symbolic name is associated with the type.
      */
-    public function getSymbolicName(int $tokenType) : ?string;
+    public function getSymbolicName(int $tokenType): ?string;
 
     /**
      * Gets the display name of a token type.
@@ -82,5 +82,5 @@ interface Vocabulary
      *                error reporting or other user-visible messages
      *                which reference specific token types.
      */
-    public function getDisplayName(int $tokenType) : string;
+    public function getDisplayName(int $tokenType): string;
 }

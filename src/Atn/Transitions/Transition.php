@@ -36,10 +36,8 @@ abstract class Transition implements Equatable
 
     /**
      * The target of this transition.
-     *
-     * @var ATNState
      */
-    public $target;
+    public ATNState $target;
 
     public function __construct(ATNState $target)
     {
@@ -54,17 +52,19 @@ abstract class Transition implements Equatable
      *              consume an input symbol; otherwise, `false` if traversing
      *              this transition consumes (matches) an input symbol.
      */
-    public function isEpsilon() : bool
+    public function isEpsilon(): bool
     {
         return false;
     }
 
-    public function label() : ?IntervalSet
+    public function label(): ?IntervalSet
     {
         return null;
     }
 
-    abstract public function getSerializationType() : int;
-    abstract public function matches(int $symbol, int $minVocabSymbol, int $maxVocabSymbol) : bool;
-    abstract public function __toString() : string;
+    abstract public function getSerializationType(): int;
+
+    abstract public function matches(int $symbol, int $minVocabSymbol, int $maxVocabSymbol): bool;
+
+    abstract public function __toString(): string;
 }

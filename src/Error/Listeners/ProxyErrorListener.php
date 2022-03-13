@@ -21,7 +21,7 @@ use Antlr\Antlr4\Runtime\Utils\BitSet;
 class ProxyErrorListener implements ANTLRErrorListener
 {
     /** @var array<ANTLRErrorListener> */
-    private $delegates;
+    private array $delegates;
 
     /**
      * @param array<ANTLRErrorListener> $delegates
@@ -37,10 +37,10 @@ class ProxyErrorListener implements ANTLRErrorListener
         int $line,
         int $charPositionInLine,
         string $msg,
-        ?RecognitionException $e
-    ) : void {
+        ?RecognitionException $exception,
+    ): void {
         foreach ($this->delegates as $listener) {
-            $listener->syntaxError($recognizer, $offendingSymbol, $line, $charPositionInLine, $msg, $e);
+            $listener->syntaxError($recognizer, $offendingSymbol, $line, $charPositionInLine, $msg, $exception);
         }
     }
 
@@ -51,8 +51,8 @@ class ProxyErrorListener implements ANTLRErrorListener
         int $stopIndex,
         bool $exact,
         ?BitSet $ambigAlts,
-        ATNConfigSet $configs
-    ) : void {
+        ATNConfigSet $configs,
+    ): void {
         foreach ($this->delegates as $listener) {
             $listener->reportAmbiguity($recognizer, $dfa, $startIndex, $stopIndex, $exact, $ambigAlts, $configs);
         }
@@ -64,8 +64,8 @@ class ProxyErrorListener implements ANTLRErrorListener
         int $startIndex,
         int $stopIndex,
         ?BitSet $conflictingAlts,
-        ATNConfigSet $configs
-    ) : void {
+        ATNConfigSet $configs,
+    ): void {
         foreach ($this->delegates as $listener) {
             $listener->reportAttemptingFullContext(
                 $recognizer,
@@ -73,7 +73,7 @@ class ProxyErrorListener implements ANTLRErrorListener
                 $startIndex,
                 $stopIndex,
                 $conflictingAlts,
-                $configs
+                $configs,
             );
         }
     }
@@ -84,8 +84,8 @@ class ProxyErrorListener implements ANTLRErrorListener
         int $startIndex,
         int $stopIndex,
         int $prediction,
-        ATNConfigSet $configs
-    ) : void {
+        ATNConfigSet $configs,
+    ): void {
         foreach ($this->delegates as $listener) {
             $listener->reportContextSensitivity($recognizer, $dfa, $startIndex, $stopIndex, $prediction, $configs);
         }

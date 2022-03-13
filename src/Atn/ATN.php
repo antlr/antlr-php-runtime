@@ -24,7 +24,7 @@ final class ATN
     public const ATN_TYPE_PARSER = 1;
 
     /** @var array<ATNState> */
-    public $states = [];
+    public array $states = [];
 
     /**
      * Each subrule/rule is a decision point and we must track them so we
@@ -33,38 +33,34 @@ final class ATN
      *
      * @var array<DecisionState>
      */
-    public $decisionToState = [];
+    public array $decisionToState = [];
 
     /**
      * Maps from rule index to starting state number.
      *
      * @var array<RuleStartState>
      */
-    public $ruleToStartState = [];
+    public array $ruleToStartState = [];
 
     /**
      * Maps from rule index to stop state number.
      *
      * @var array<RuleStopState>
      */
-    public $ruleToStopState = [];
+    public array $ruleToStopState = [];
 
     /** @var array<TokensStartState> */
-    public $modeNameToStartState = [];
+    public array $modeNameToStartState = [];
 
     /**
      * The type of the ATN.
-     *
-     * @var int
      */
-    public $grammarType;
+    public int $grammarType;
 
     /**
      * The maximum value for any symbol recognized by a transition in the ATN.
-     *
-     * @var int
      */
-    public $maxTokenType;
+    public int $maxTokenType;
 
     /**
      * For lexer ATNs, this maps the rule index to the resulting token type.
@@ -75,7 +71,7 @@ final class ATN
      *
      * @var array<int|null>
      */
-    public $ruleToTokenType = [];
+    public array $ruleToTokenType = [];
 
     /**
      * For lexer ATNs, this is an array of {@see LexerAction} objects which may
@@ -83,10 +79,10 @@ final class ATN
      *
      * @var array<LexerAction>
      */
-    public $lexerActions = [];
+    public array $lexerActions = [];
 
     /** @var array<TokensStartState> */
-    public $modeToStartState = [];
+    public array $modeToStartState = [];
 
     /**
      * Used for runtime deserialization of ATNs from strings
@@ -103,7 +99,7 @@ final class ATN
      * the rule surrounding `state`. In other words, the set will be
      * restricted to tokens reachable staying within `state`'s rule.
      */
-    public function nextTokensInContext(ATNState $state, ?RuleContext $context) : IntervalSet
+    public function nextTokensInContext(ATNState $state, ?RuleContext $context): IntervalSet
     {
         return (new LL1Analyzer($this))->look($state, null, $context);
     }
@@ -113,7 +109,7 @@ final class ATN
      * staying in same rule. {@see Token::EPSILON} is in set if we reach end of
      * rule.
      */
-    public function nextTokens(ATNState $state) : IntervalSet
+    public function nextTokens(ATNState $state): IntervalSet
     {
         if ($state->nextTokenWithinRule !== null) {
             return $state->nextTokenWithinRule;
@@ -125,7 +121,7 @@ final class ATN
         return $state->nextTokenWithinRule;
     }
 
-    public function addState(?ATNState $state) : void
+    public function addState(?ATNState $state): void
     {
         if ($state === null) {
             return;
@@ -137,13 +133,13 @@ final class ATN
         $this->states[] = $state;
     }
 
-    public function removeState(ATNState $state) : void
+    public function removeState(ATNState $state): void
     {
         // just free mem, don't shift states in list
         unset($this->states[$state->stateNumber]);
     }
 
-    public function defineDecisionState(DecisionState $s) : int
+    public function defineDecisionState(DecisionState $s): int
     {
         $this->decisionToState[] = $s;
 
@@ -152,7 +148,7 @@ final class ATN
         return $s->decision;
     }
 
-    public function getDecisionState(int $decision) : ?DecisionState
+    public function getDecisionState(int $decision): ?DecisionState
     {
         if (\count($this->decisionToState) === 0) {
             return null;
@@ -161,7 +157,7 @@ final class ATN
         return $this->decisionToState[$decision];
     }
 
-    public function getNumberOfDecisions() : int
+    public function getNumberOfDecisions(): int
     {
         return \count($this->decisionToState);
     }
@@ -183,9 +179,9 @@ final class ATN
      * @return IntervalSet The set of potentially valid input symbols which could
      *                     follow the specified state in the specified context.
      *
-     * @throws \RuntimeException
+     * @throws \LogicException
      */
-    public function getExpectedTokens(int $stateNumber, ?RuleContext $context) : IntervalSet
+    public function getExpectedTokens(int $stateNumber, ?RuleContext $context): IntervalSet
     {
         if ($stateNumber < 0 || $stateNumber >= \count($this->states)) {
             throw new \InvalidArgumentException('Invalid state number.');
@@ -212,7 +208,7 @@ final class ATN
             $transition = $invokingState->getTransition(0);
 
             if (!$transition instanceof RuleTransition) {
-                throw new \RuntimeException('Unexpected transition type.');
+                throw new \LogicException('Unexpected transition type.');
             }
 
             $following = $this->nextTokens($transition->followState);

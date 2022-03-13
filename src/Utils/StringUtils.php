@@ -10,9 +10,10 @@ final class StringUtils
 
     private function __construct()
     {
+        // Prevent instantiation
     }
 
-    public static function escapeWhitespace(string $string, bool $escapeSpaces = false) : string
+    public static function escapeWhitespace(string $string, bool $escapeSpaces = false): string
     {
         if ($string === '') {
             return $string;
@@ -27,12 +28,12 @@ final class StringUtils
         return $string ?? '';
     }
 
-    public static function char(int $code) : string
+    public static function char(int $code): string
     {
         return \mb_chr($code, self::ENCODING);
     }
 
-    public static function codePoint(string $code) : int
+    public static function codePoint(string $code): int
     {
         return \mb_ord($code, self::ENCODING);
     }

@@ -6,10 +6,9 @@ namespace Antlr\Antlr4\Runtime\Atn\States;
 
 final class BlockEndState extends ATNState
 {
-    /** @var BlockStartState|null */
-    public $startState;
+    public ?BlockStartState $startState = null;
 
-    public function getStateType() : int
+    public function getStateType(): int
     {
         return self::BLOCK_END;
     }

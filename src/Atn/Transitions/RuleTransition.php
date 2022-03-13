@@ -12,20 +12,15 @@ final class RuleTransition extends Transition
     /**
      * Ptr to the rule definition object for this rule ref.
      * No Rule object at runtime.
-     *
-     * @var int
      */
-    public $ruleIndex;
+    public int $ruleIndex;
 
-    /** @var int */
-    public $precedence;
+    public int $precedence;
 
     /**
      * What node to begin computations following ref to rule
-     *
-     * @var ATNState
      */
-    public $followState;
+    public ATNState $followState;
 
     public function __construct(RuleStartState $ruleStart, int $ruleIndex, int $precedence, ATNState $followState)
     {
@@ -36,7 +31,7 @@ final class RuleTransition extends Transition
         $this->followState = $followState;
     }
 
-    public function matches(int $symbol, int $minVocabSymbol, int $maxVocabSymbol) : bool
+    public function matches(int $symbol, int $minVocabSymbol, int $maxVocabSymbol): bool
     {
         return false;
     }
@@ -44,17 +39,17 @@ final class RuleTransition extends Transition
     /**
      * {@inheritdoc}
      */
-    public function isEpsilon() : bool
+    public function isEpsilon(): bool
     {
         return true;
     }
 
-    public function getSerializationType() : int
+    public function getSerializationType(): int
     {
         return self::RULE;
     }
 
-    public function equals(object $other) : bool
+    public function equals(object $other): bool
     {
         if ($this === $other) {
             return true;
@@ -66,7 +61,7 @@ final class RuleTransition extends Transition
             && $this->target->equals($other->target);
     }
 
-    public function __toString() : string
+    public function __toString(): string
     {
         return \sprintf('rule_%d:%d,%s', $this->ruleIndex, $this->precedence, $this->followState);
     }

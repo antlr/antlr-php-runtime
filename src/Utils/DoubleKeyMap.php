@@ -4,14 +4,17 @@ declare(strict_types=1);
 
 namespace Antlr\Antlr4\Runtime\Utils;
 
+use Antlr\Antlr4\Runtime\Comparison\Hashable;
+
+/**
+ * @template K1 of Hashable
+ * @template K2 of Hashable
+ * @template V
+ */
 final class DoubleKeyMap
 {
-    /**
-     * Map<primaryKey, Map<secondaryKey, value>>
-     *
-     * @var Map
-     */
-    private $data;
+    /** @var Map<K1, Map<K2, V>> */
+    private Map $data;
 
     public function __construct()
     {
@@ -19,15 +22,16 @@ final class DoubleKeyMap
     }
 
     /**
-     * @param mixed $primaryKey
-     * @param mixed $secondaryKey
-     * @param mixed $value
+     * @param K1 $primaryKey
+     * @param K2 $secondaryKey
+     * @param V  $value
      */
-    public function set($primaryKey, $secondaryKey, $value) : void
+    public function set(Hashable $primaryKey, Hashable $secondaryKey, mixed $value): void
     {
         $secondaryData = $this->data->get($primaryKey);
 
         if ($secondaryData === null) {
+            /** @var Map<K2, V> $secondaryData */
             $secondaryData = new Map();
 
             $this->data->put($primaryKey, $secondaryData);
@@ -37,12 +41,12 @@ final class DoubleKeyMap
     }
 
     /**
-     * @param mixed $primaryKey
-     * @param mixed $secondaryKey
+     * @param K1 $primaryKey
+     * @param K2 $secondaryKey
      *
-     * @return mixed
+     * @return V|null
      */
-    public function getByTwoKeys($primaryKey, $secondaryKey)
+    public function getByTwoKeys(Hashable $primaryKey, Hashable $secondaryKey): mixed
     {
         $data2 = $this->data->get($primaryKey);
 
@@ -54,19 +58,21 @@ final class DoubleKeyMap
     }
 
     /**
-     * @param mixed $primaryKey
+     * @param K1 $primaryKey
+     *
+     * @return Map<K2, V>
      */
-    public function getByOneKey($primaryKey) : Map
+    public function getByOneKey(Hashable $primaryKey): ?Map
     {
         return $this->data->get($primaryKey);
     }
 
     /**
-     * @param mixed $primaryKey
+     * @param K1 $primaryKey
      *
-     * @return array<mixed>|null
+     * @return array<V>|null
      */
-    public function values($primaryKey) : ?array
+    public function values(Hashable $primaryKey): ?array
     {
         $secondaryData = $this->data->get($primaryKey);
 
@@ -78,19 +84,19 @@ final class DoubleKeyMap
     }
 
     /**
-     * @return array<mixed>
+     * @return array<K1>
      */
-    public function primaryKeys() : array
+    public function primaryKeys(): array
     {
         return $this->data->getKeys();
     }
 
     /**
-     * @param mixed $primaryKey
+     * @param K1 $primaryKey
      *
-     * @return array<mixed>|null
+     * @return array<K2>|null
      */
-    public function secondaryKeys($primaryKey) : ?array
+    public function secondaryKeys(Hashable $primaryKey): ?array
     {
         $secondaryData = $this->data->get($primaryKey);
 

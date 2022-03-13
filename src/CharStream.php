@@ -17,5 +17,5 @@ interface CharStream extends IntStream
      *
      * @return string The text of the specified interval.
      */
-    public function getText(int $start, int $stop) : string;
+    public function getText(int $start, int $stop): string;
 }

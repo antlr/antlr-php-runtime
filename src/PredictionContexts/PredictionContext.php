@@ -12,11 +12,9 @@ use Antlr\Antlr4\Runtime\Utils\DoubleKeyMap;
 
 abstract class PredictionContext implements Hashable
 {
-    /** @var int */
-    private static $globalNodeCount = 1;
+    private static int $globalNodeCount = 1;
 
-    /** @var int */
-    public $id;
+    public int $id;
 
     /**
      * Represents `$` in an array in full context mode, when `$` doesn't mean
@@ -45,22 +43,20 @@ abstract class PredictionContext implements Hashable
      *
      *         return hash;
      *     }
-     *
-     * @var int|null
      */
-    public $cachedHashCode;
+    public ?int $cachedHashCode = null;
 
     public function __construct()
     {
         $this->id = self::$globalNodeCount++;
     }
 
-    public static function empty() : EmptyPredictionContext
+    public static function empty(): EmptyPredictionContext
     {
         static $empty;
 
         if ($empty === null) {
-            static::$globalNodeCount--;
+            self::$globalNodeCount--;
             $empty = new EmptyPredictionContext();
             $empty->id = 0;
         }
@@ -72,7 +68,7 @@ abstract class PredictionContext implements Hashable
      * Convert a {@see RuleContext} tree to a {@see PredictionContext} graph.
      * Return {@see PredictionContext::empty()} if `outerContext` is empty or null.
      */
-    public static function fromRuleContext(ATN $atn, ?RuleContext $outerContext) : PredictionContext
+    public static function fromRuleContext(ATN $atn, ?RuleContext $outerContext): PredictionContext
     {
         if ($outerContext === null) {
             $outerContext = RuleContext::emptyContext();
@@ -90,7 +86,7 @@ abstract class PredictionContext implements Hashable
         $transition = $state->getTransition(0);
 
         if (!$transition instanceof RuleTransition) {
-            throw new \RuntimeException('Unexpected transition type.');
+            throw new \LogicException('Unexpected transition type.');
         }
 
         return SingletonPredictionContext::create($parent, $transition->followState->stateNumber);
@@ -100,17 +96,17 @@ abstract class PredictionContext implements Hashable
      * This means only the {@see PredictionContext::empty()} (wildcard? not sure)
      * context is in set.
      */
-    public function isEmpty() : bool
+    public function isEmpty(): bool
     {
         return $this === self::empty();
     }
 
-    public function hasEmptyPath() : bool
+    public function hasEmptyPath(): bool
     {
         return $this->getReturnState($this->getLength() - 1) === self::EMPTY_RETURN_STATE;
     }
 
-    public function hashCode() : int
+    public function hashCode(): int
     {
         if ($this->cachedHashCode === null) {
             $this->cachedHashCode = $this->computeHashCode();
@@ -119,18 +115,25 @@ abstract class PredictionContext implements Hashable
         return $this->cachedHashCode;
     }
 
-    abstract protected function computeHashCode() : int;
-    abstract public function getLength() : int;
-    abstract public function getParent(int $index) : ?self;
-    abstract public function getReturnState(int $index) : int;
-    abstract public function __toString() : string;
+    abstract protected function computeHashCode(): int;
 
+    abstract public function getLength(): int;
+
+    abstract public function getParent(int $index): ?self;
+
+    abstract public function getReturnState(int $index): int;
+
+    abstract public function __toString(): string;
+
+    /**
+     * @param DoubleKeyMap<PredictionContext,PredictionContext,PredictionContext>|null $mergeCache
+     */
     public static function merge(
         PredictionContext $a,
         PredictionContext $b,
         bool $rootIsWildcard,
-        ?DoubleKeyMap $mergeCache
-    ) : PredictionContext {
+        ?DoubleKeyMap $mergeCache,
+    ): PredictionContext {
         // share same graph if both same
         if ($a->equals($b)) {
             return $a;
@@ -162,7 +165,7 @@ abstract class PredictionContext implements Hashable
         }
 
         if (!$a instanceof ArrayPredictionContext || !$b instanceof ArrayPredictionContext) {
-            throw new \RuntimeException('Unexpected transition type.');
+            throw new \LogicException('Unexpected transition type.');
         }
 
         return self::mergeArrays($a, $b, $rootIsWildcard, $mergeCache);
@@ -185,17 +188,14 @@ abstract class PredictionContext implements Hashable
      * the root where each element points to the corresponding original
      * parent.
      *
-     * @param SingletonPredictionContext $a              The first {@see SingletonPredictionContext}
-     * @param SingletonPredictionContext $b              The second {@see SingletonPredictionContext}
-     * @param bool                       $rootIsWildcard `true` if this is a local-context merge,
-     *                                                   otherwise false to indicate a full-context merge
+     * @param DoubleKeyMap<PredictionContext,PredictionContext,PredictionContext>|null $mergeCache
      */
     public static function mergeSingletons(
         SingletonPredictionContext $a,
         SingletonPredictionContext $b,
         bool $rootIsWildcard,
-        ?DoubleKeyMap $mergeCache
-    ) : PredictionContext {
+        ?DoubleKeyMap $mergeCache,
+    ): PredictionContext {
         if ($mergeCache !== null) {
             $previous = $mergeCache->getByTwoKeys($a, $b);
 
@@ -222,7 +222,7 @@ abstract class PredictionContext implements Hashable
 
         if ($a->returnState === $b->returnState) {
             if ($a->parent === null || $b->parent === null) {
-                throw new \RuntimeException('Unexpected null parents.');
+                throw new \LogicException('Unexpected null parents.');
             }
 
             $parent = self::merge($a->parent, $b->parent, $rootIsWildcard, $mergeCache);
@@ -246,6 +246,7 @@ abstract class PredictionContext implements Hashable
             if ($mergeCache !== null) {
                 $mergeCache->set($a, $b, $spc);
             }
+
             return $spc;
         } else {
             // a != b payloads differ
@@ -341,8 +342,8 @@ abstract class PredictionContext implements Hashable
     public static function mergeRoot(
         SingletonPredictionContext $a,
         SingletonPredictionContext $b,
-        bool $rootIsWildcard
-    ) : ?PredictionContext {
+        bool $rootIsWildcard,
+    ): ?PredictionContext {
         if ($rootIsWildcard) {
             if ($a === self::empty()) {
                 return self::empty();// // + b =//
@@ -379,33 +380,14 @@ abstract class PredictionContext implements Hashable
     /**
      * Merge two {@see ArrayPredictionContext} instances.
      *
-     * Different tops, different parents.
-     *
-     * [[img src="images/ArrayMerge_DiffTopDiffPar.svg" type="image/svg+xml"]]
-     *
-     * Shared top, same parents.
-     *
-     * [[img src="images/ArrayMerge_ShareTopSamePar.svg" type="image/svg+xml"]]
-     *
-     * Shared top, different parents.
-     *
-     * [[img src="images/ArrayMerge_ShareTopDiffPar.svg" type="image/svg+xml"]]
-     *
-     * Shared top, all shared parents.
-     *
-     * [[img src="images/ArrayMerge_ShareTopSharePar.svg" type="image/svg+xml"]]
-     *
-     * Equal tops, merge parents and reduce top to
-     * {@see SingletonPredictionContext}.
-     *
-     * [[img src="images/ArrayMerge_EqualTop.svg" type="image/svg+xml"]]
+     * @param DoubleKeyMap<PredictionContext,PredictionContext,PredictionContext>|null $mergeCache
      */
     public static function mergeArrays(
         ArrayPredictionContext $a,
         ArrayPredictionContext $b,
         bool $rootIsWildcard,
-        ?DoubleKeyMap $mergeCache
-    ) : PredictionContext {
+        ?DoubleKeyMap $mergeCache,
+    ): PredictionContext {
         if ($mergeCache !== null) {
             $previous = $mergeCache->getByTwoKeys($a, $b);
 
@@ -448,7 +430,7 @@ abstract class PredictionContext implements Hashable
                     $mergedReturnStates[$k] = $payload;
                 } else {
                     if ($a_parent === null || $b_parent === null) {
-                        throw new \RuntimeException('Unexpected null parents.');
+                        throw new \LogicException('Unexpected null parents.');
                     }
 
                     // ax+ay -> a'[x,y]
@@ -539,7 +521,7 @@ abstract class PredictionContext implements Hashable
     /**
      * @param array<PredictionContext> $parents
      */
-    protected static function combineCommonParents(array &$parents) : void
+    protected static function combineCommonParents(array &$parents): void
     {
         $uniqueParents = new \SplObjectStorage();
 
@@ -560,8 +542,8 @@ abstract class PredictionContext implements Hashable
     public static function getCachedPredictionContext(
         PredictionContext $context,
         PredictionContextCache $contextCache,
-        array &$visited
-    ) : self {
+        array &$visited,
+    ): self {
         if ($context->isEmpty()) {
             return $context;
         }
@@ -591,7 +573,7 @@ abstract class PredictionContext implements Hashable
 
             $parent = self::getCachedPredictionContext($parentContext, $contextCache, $visited);
 
-            if ($changed || ($parentContext !== null && !$parent->equals($parentContext))) {
+            if ($changed || !$parent->equals($parentContext)) {
                 if (!$changed) {
                     $parents = [];
 
@@ -622,7 +604,7 @@ abstract class PredictionContext implements Hashable
             $updated = SingletonPredictionContext::create($parents[0], $context->getReturnState(0));
         } else {
             if (!$context instanceof ArrayPredictionContext) {
-                throw new \RuntimeException('Unexpected context type.');
+                throw new \LogicException('Unexpected context type.');
             }
 
             $updated = new ArrayPredictionContext($parents, $context->returnStates);

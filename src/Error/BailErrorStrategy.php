@@ -42,13 +42,13 @@ class BailErrorStrategy extends DefaultErrorStrategy
      * rule function catches. Use {@see Exception::getCause()} to get the
      * original {@see RecognitionException}.
      */
-    public function recover(Parser $recognizer, RecognitionException $e) : void
+    public function recover(Parser $recognizer, RecognitionException $e): void
     {
         $context = $recognizer->getContext();
 
         while ($context !== null) {
             if (!$context instanceof ParserRuleContext) {
-                throw new \RuntimeException('Unexpected context type.');
+                throw new \InvalidArgumentException('Unexpected context type.');
             }
 
             $context->exception = $e;
@@ -64,13 +64,13 @@ class BailErrorStrategy extends DefaultErrorStrategy
      *
      * @throws ParseCancellationException
      */
-    public function recoverInline(Parser $recognizer) : Token
+    public function recoverInline(Parser $recognizer): Token
     {
         $e = new InputMismatchException($recognizer);
 
         for ($context = $recognizer->getContext(); $context; $context = $context->getParent()) {
             if (!$context instanceof ParserRuleContext) {
-                throw new \RuntimeException('Unexpected context type.');
+                throw new \InvalidArgumentException('Unexpected context type.');
             }
 
             $context->exception = $e;
@@ -82,7 +82,8 @@ class BailErrorStrategy extends DefaultErrorStrategy
     /**
      * Make sure we don't attempt to recover from problems in subrules.
      */
-    public function sync(Parser $recognizer) : void
+    public function sync(Parser $recognizer): void
     {
+        // No-op
     }
 }

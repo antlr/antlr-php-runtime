@@ -11,11 +11,9 @@ use Antlr\Antlr4\Runtime\Comparison\Equatable;
  */
 final class Interval implements Equatable
 {
-    /** @var int */
-    public $start;
+    public int $start;
 
-    /** @var int */
-    public $stop;
+    public int $stop;
 
     public function __construct(int $start, int $stop)
     {
@@ -23,24 +21,24 @@ final class Interval implements Equatable
         $this->stop = $stop;
     }
 
-    public static function invalid() : self
+    public static function invalid(): self
     {
         static $invalid;
 
         return $invalid ?? $invalid = new Interval(-1, -2);
     }
 
-    public function contains(int $item) : bool
+    public function contains(int $item): bool
     {
         return $item >= $this->start && $item <= $this->stop;
     }
 
-    public function getLength() : int
+    public function getLength(): int
     {
         return $this->stop - $this->start + 1;
     }
 
-    public function equals(object $other) : bool
+    public function equals(object $other): bool
     {
         if ($this === $other) {
             return true;
@@ -54,7 +52,7 @@ final class Interval implements Equatable
     /**
      * Does this start completely before other? Disjoint.
      */
-    public function startsBeforeDisjoint(Interval $other) : bool
+    public function startsBeforeDisjoint(Interval $other): bool
     {
         return $this->start < $other->start && $this->stop < $other->start;
     }
@@ -62,7 +60,7 @@ final class Interval implements Equatable
     /**
      * Does this start at or before other? Nondisjoint.
      */
-    public function startsBeforeNonDisjoint(Interval $other) : bool
+    public function startsBeforeNonDisjoint(Interval $other): bool
     {
         return $this->start <= $other->start && $this->stop >= $other->start;
     }
@@ -70,7 +68,7 @@ final class Interval implements Equatable
     /**
      * Does this.a start after other.b? May or may not be disjoint.
      */
-    public function startsAfter(Interval $other) : bool
+    public function startsAfter(Interval $other): bool
     {
         return $this->start > $other->start;
     }
@@ -78,7 +76,7 @@ final class Interval implements Equatable
     /**
      * Does this start completely after other? Disjoint.
      */
-    public function startsAfterDisjoint(Interval $other) : bool
+    public function startsAfterDisjoint(Interval $other): bool
     {
         return $this->start > $other->stop;
     }
@@ -86,7 +84,7 @@ final class Interval implements Equatable
     /**
      * Does this start after other? NonDisjoint
      */
-    public function startsAfterNonDisjoint(Interval $other) : bool
+    public function startsAfterNonDisjoint(Interval $other): bool
     {
         // this.b >= other.b implied
         return $this->start > $other->start && $this->start <= $other->stop;
@@ -95,7 +93,7 @@ final class Interval implements Equatable
     /**
      * Are both ranges disjoint? I.e., no overlap?
      */
-    public function disjoint(Interval $other) : bool
+    public function disjoint(Interval $other): bool
     {
         return $this->startsBeforeDisjoint($other) || $this->startsAfterDisjoint($other);
     }
@@ -103,7 +101,7 @@ final class Interval implements Equatable
     /**
      * Are two intervals adjacent such as 0..41 and 42..42?
      */
-    public function adjacent(Interval $other) : bool
+    public function adjacent(Interval $other): bool
     {
         return $this->start === $other->stop + 1 || $this->stop === $other->start - 1;
     }
@@ -111,7 +109,7 @@ final class Interval implements Equatable
     /**
      * Return the interval computed from combining this and other
      */
-    public function union(Interval $other) : self
+    public function union(Interval $other): self
     {
         return new self(\min($this->start, $other->start), \max($this->stop, $other->stop));
     }
@@ -119,12 +117,12 @@ final class Interval implements Equatable
     /**
      * Return the interval in common between this and o
      */
-    public function intersection(Interval $other) : self
+    public function intersection(Interval $other): self
     {
         return new self(\max($this->start, $other->start), \min($this->stop, $other->stop));
     }
 
-    public function __toString() : string
+    public function __toString(): string
     {
         if ($this->start === $this->stop) {
             return (string) $this->start;

@@ -10,23 +10,21 @@ use Antlr\Antlr4\Runtime\Token;
 
 class TerminalNodeImpl implements TerminalNode
 {
-    /** @var Token */
-    public $symbol;
+    public Token $symbol;
 
-    /** @var ParseTree|null */
-    public $parent;
+    public ?ParseTree $parent = null;
 
     public function __construct(Token $symbol)
     {
         $this->symbol = $symbol;
     }
 
-    public function getChild(int $i, ?string $type = null) : ?Tree
+    public function getChild(int $i, ?string $type = null): ?Tree
     {
         return null;
     }
 
-    public function getSymbol() : Token
+    public function getSymbol(): Token
     {
         return $this->symbol;
     }
@@ -34,43 +32,39 @@ class TerminalNodeImpl implements TerminalNode
     /**
      * @return ParseTree|null
      */
-    public function getParent() : ?Tree
+    public function getParent(): ?Tree
     {
         return $this->parent;
     }
 
-    public function setParent(RuleContext $parent) : void
+    public function setParent(RuleContext $parent): void
     {
         $this->parent = $parent;
     }
 
-    public function getPayload() : Token
+    public function getPayload(): Token
     {
         return $this->symbol;
     }
 
-    public function getSourceInterval() : Interval
+    public function getSourceInterval(): Interval
     {
-        if ($this->symbol === null) {
-            return new Interval(-1, -2);
-        }
-
         $tokenIndex = $this->symbol->getTokenIndex();
 
         return new Interval($tokenIndex, $tokenIndex);
     }
 
-    public function getChildCount() : int
+    public function getChildCount(): int
     {
         return 0;
     }
 
-    public function accept(ParseTreeVisitor $visitor)
+    public function accept(ParseTreeVisitor $visitor): mixed
     {
         return $visitor->visitTerminal($this);
     }
 
-    public function getText() : ?string
+    public function getText(): ?string
     {
         return $this->symbol->getText();
     }
@@ -78,12 +72,12 @@ class TerminalNodeImpl implements TerminalNode
     /**
      * @param array<string>|null $ruleNames
      */
-    public function toStringTree(?array $ruleNames = null) : string
+    public function toStringTree(?array $ruleNames = null): string
     {
         return (string) $this;
     }
 
-    public function __toString() : string
+    public function __toString(): string
     {
         if ($this->symbol->getType() === Token::EOF) {
             return '<EOF>';

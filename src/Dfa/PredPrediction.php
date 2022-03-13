@@ -11,11 +11,9 @@ use Antlr\Antlr4\Runtime\Atn\SemanticContexts\SemanticContext;
  */
 final class PredPrediction
 {
-    /** @var SemanticContext */
-    public $pred;
+    public SemanticContext $pred;
 
-    /** @var int */
-    public $alt;
+    public int $alt;
 
     public function __construct(SemanticContext $pred, int $alt)
     {
@@ -23,7 +21,7 @@ final class PredPrediction
         $this->alt = $alt;
     }
 
-    public function __toString() : string
+    public function __toString(): string
     {
         return \sprintf('(%s, %d)', (string) $this->pred, $this->alt);
     }

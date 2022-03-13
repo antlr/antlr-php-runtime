@@ -8,13 +8,10 @@ final class Equality
 {
     private function __construct()
     {
+        // Prevent instantiation
     }
 
-    /**
-     * @param mixed $left
-     * @param mixed $right
-     */
-    public static function equals($left, $right) : bool
+    public static function equals(mixed $left, mixed $right): bool
     {
         if ($left instanceof Equatable && $right instanceof Equatable) {
             return $left->equals($right);
@@ -31,7 +28,7 @@ final class Equality
      * @param array<mixed> $left
      * @param array<mixed> $right
      */
-    private static function deeplyEquals(array $left, array $right) : bool
+    private static function deeplyEquals(array $left, array $right): bool
     {
         if ($left === $right) {
             return true;

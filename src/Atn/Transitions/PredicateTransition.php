@@ -9,18 +9,14 @@ use Antlr\Antlr4\Runtime\Atn\States\ATNState;
 
 class PredicateTransition extends AbstractPredicateTransition
 {
-    /** @var int */
-    public $ruleIndex;
+    public int $ruleIndex;
 
-    /** @var int */
-    public $predIndex;
+    public int $predIndex;
 
     /**
      * e.g., $i ref in pred
-     *
-     * @var bool
      */
-    public $isCtxDependent;
+    public bool $isCtxDependent;
 
     public function __construct(ATNState $target, int $ruleIndex, int $predIndex, bool $isCtxDependent)
     {
@@ -31,12 +27,12 @@ class PredicateTransition extends AbstractPredicateTransition
         $this->isCtxDependent = $isCtxDependent;
     }
 
-    public function matches(int $symbol, int $minVocabSymbol, int $maxVocabSymbol) : bool
+    public function matches(int $symbol, int $minVocabSymbol, int $maxVocabSymbol): bool
     {
         return false;
     }
 
-    public function getPredicate() : Predicate
+    public function getPredicate(): Predicate
     {
         return new Predicate($this->ruleIndex, $this->predIndex, $this->isCtxDependent);
     }
@@ -44,17 +40,17 @@ class PredicateTransition extends AbstractPredicateTransition
     /**
      * {@inheritdoc}
      */
-    public function isEpsilon() : bool
+    public function isEpsilon(): bool
     {
         return true;
     }
 
-    public function getSerializationType() : int
+    public function getSerializationType(): int
     {
         return self::PREDICATE;
     }
 
-    public function equals(object $other) : bool
+    public function equals(object $other): bool
     {
         if ($this === $other) {
             return true;
@@ -67,7 +63,7 @@ class PredicateTransition extends AbstractPredicateTransition
             && $this->target->equals($other->target);
     }
 
-    public function __toString() : string
+    public function __toString(): string
     {
         return \sprintf('pred_%d:%d', $this->ruleIndex, $this->predIndex);
     }

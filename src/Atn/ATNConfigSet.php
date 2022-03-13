@@ -27,61 +27,48 @@ class ATNConfigSet implements Hashable
      * the sets and they must not change. This does not protect the other
      * fields; in particular, conflictingAlts is set after
      * we've made this readonly.
-     *
-     * @var bool
      */
-    protected $readOnly = false;
+    protected bool $readOnly = false;
 
     /**
      * All configs but hashed by (s, i, _, pi) not including context. Wiped out
      * when we go readonly as this set becomes a DFA state.
-     *
-     * @var Set|null
      */
-    public $configLookup;
+    public ?Set $configLookup = null;
 
     /**
      * Track the elements as they are added to the set; supports get(i).
      *
      * @var array<ATNConfig>
      */
-    public $configs = [];
+    public array $configs = [];
 
-    /** @var int */
-    public $uniqueAlt = 0;
+    public int $uniqueAlt = 0;
 
     /**
      * Currently this is only used when we detect SLL conflict; this does
      * not necessarily represent the ambiguous alternatives. In fact, I should
      * also point out that this seems to include predicated alternatives that
      * have predicates that evaluate to false. Computed in computeTargetState().
-     *
-     * @var BitSet|null
      */
-    protected $conflictingAlts;
+    protected ?BitSet $conflictingAlts = null;
 
     /**
      * Used in parser and lexer. In lexer, it indicates we hit a pred
      * while computing a closure operation. Don't make a DFA state from this.
-     *
-     * @var bool
      */
-    public $hasSemanticContext = false;
+    public bool $hasSemanticContext = false;
 
-    /** @var bool */
-    public $dipsIntoOuterContext = false;
+    public bool $dipsIntoOuterContext = false;
 
     /**
      * Indicates that this configuration set is part of a full context LL
      * prediction. It will be used to determine how to merge $. With SLL it's
      * a wildcard whereas it is not for LL context merge.
-     *
-     * @var bool
      */
-    public $fullCtx;
+    public bool $fullCtx;
 
-    /** @var int|null */
-    private $cachedHashCode;
+    private ?int $cachedHashCode = null;
 
     public function __construct(bool $fullCtx = true)
     {
@@ -96,7 +83,7 @@ class ATNConfigSet implements Hashable
          * becomes a DFA state.
          */
         $this->configLookup = new Set(new class implements Equivalence {
-            public function equivalent(Hashable $left, Hashable $right) : bool
+            public function equivalent(Hashable $left, Hashable $right): bool
             {
                 if ($left === $right) {
                     return true;
@@ -111,12 +98,12 @@ class ATNConfigSet implements Hashable
                     && Equality::equals($left->state, $right->state);
             }
 
-            public function hash(Hashable $value) : int
+            public function hash(Hashable $value): int
             {
                 return $value->hashCode();
             }
 
-            public function equals(object $other) : bool
+            public function equals(object $other): bool
             {
                 return $other instanceof self;
             }
@@ -136,7 +123,7 @@ class ATNConfigSet implements Hashable
      *
      * @throws \InvalidArgumentException
      */
-    public function add(ATNConfig $config, ?DoubleKeyMap $mergeCache = null) : bool
+    public function add(ATNConfig $config, ?DoubleKeyMap $mergeCache = null): bool
     {
         if ($this->readOnly || $this->configLookup === null) {
             throw new \InvalidArgumentException('This set is readonly.');
@@ -148,10 +135,6 @@ class ATNConfigSet implements Hashable
 
         if ($config->reachesIntoOuterContext > 0) {
             $this->dipsIntoOuterContext = true;
-        }
-
-        if ($this->configLookup === null) {
-            throw new \RuntimeException('This set is readonly.');
         }
 
         /** @var ATNConfig $existing */
@@ -169,7 +152,7 @@ class ATNConfigSet implements Hashable
         $rootIsWildcard = !$this->fullCtx;
 
         if ($existing->context === null || $config->context === null) {
-            throw new \RuntimeException('Unexpected null context.');
+            throw new \LogicException('Unexpected null context.');
         }
 
         $merged = PredictionContext::merge($existing->context, $config->context, $rootIsWildcard, $mergeCache);
@@ -179,7 +162,7 @@ class ATNConfigSet implements Hashable
         // cache at both places.
         $existing->reachesIntoOuterContext = \max(
             $existing->reachesIntoOuterContext,
-            $config->reachesIntoOuterContext
+            $config->reachesIntoOuterContext,
         );
 
         // Make sure to preserve the precedence filter suppression during the merge
@@ -198,18 +181,16 @@ class ATNConfigSet implements Hashable
      *
      * @return array<ATNConfig>
      */
-    public function elements() : array
+    public function elements(): array
     {
         return $this->configs;
     }
 
-    public function getStates() : Set
+    public function getStates(): Set
     {
         $states = new Set();
         foreach ($this->configs as $config) {
-            if ($config !== null) {
-                $states->add($config->state);
-            }
+            $states->add($config->state);
         }
 
         return $states;
@@ -220,13 +201,11 @@ class ATNConfigSet implements Hashable
      *
      * @return BitSet The set of represented alternatives in this configuration set.
      */
-    public function getAlts() : BitSet
+    public function getAlts(): BitSet
     {
         $alts = new BitSet();
         foreach ($this->configs as $config) {
-            if ($config !== null) {
-                $alts->add($config->alt);
-            }
+            $alts->add($config->alt);
         }
 
         return $alts;
@@ -235,7 +214,7 @@ class ATNConfigSet implements Hashable
     /**
      * @return array<SemanticContext>
      */
-    public function getPredicates() : array
+    public function getPredicates(): array
     {
         $predicates = [];
         foreach ($this->configs as $config) {
@@ -247,12 +226,12 @@ class ATNConfigSet implements Hashable
         return $predicates;
     }
 
-    public function get(int $index) : ATNConfig
+    public function get(int $index): ATNConfig
     {
         return $this->configs[$index];
     }
 
-    public function optimizeConfigs(ATNSimulator $interpreter) : void
+    public function optimizeConfigs(ATNSimulator $interpreter): void
     {
         if ($this->readOnly || $this->configLookup === null) {
             throw new \InvalidArgumentException('This set is readonly');
@@ -263,7 +242,7 @@ class ATNConfigSet implements Hashable
         }
 
         foreach ($this->configs as $config) {
-            if ($config !== null && $config->context !== null) {
+            if ($config->context !== null) {
                 $config->context = $interpreter->getCachedContext($config->context);
             }
         }
@@ -272,14 +251,14 @@ class ATNConfigSet implements Hashable
     /**
      * @param array<ATNConfig> $configs
      */
-    public function addAll(array $configs) : void
+    public function addAll(array $configs): void
     {
         foreach ($configs as $config) {
             $this->add($config);
         }
     }
 
-    public function equals(object $other) : bool
+    public function equals(object $other): bool
     {
         if ($this === $other) {
             return true;
@@ -297,7 +276,7 @@ class ATNConfigSet implements Hashable
             && Equality::equals($this->conflictingAlts, $other->conflictingAlts);
     }
 
-    public function hashCode() : int
+    public function hashCode(): int
     {
         if (!$this->isReadOnly()) {
             return Hasher::hash($this->configs);
@@ -310,17 +289,17 @@ class ATNConfigSet implements Hashable
         return $this->cachedHashCode;
     }
 
-    public function getLength() : int
+    public function getLength(): int
     {
         return \count($this->configs);
     }
 
-    public function isEmpty() : bool
+    public function isEmpty(): bool
     {
         return $this->getLength() === 0;
     }
 
-    public function contains(object $item) : bool
+    public function contains(object $item): bool
     {
         if ($this->configLookup === null) {
             throw new \InvalidArgumentException('This method is not implemented for readonly sets.');
@@ -329,17 +308,17 @@ class ATNConfigSet implements Hashable
         return $this->configLookup->contains($item);
     }
 
-    public function containsFast(ATNConfig $item) : bool
+    public function containsFast(ATNConfig $item): bool
     {
         return $this->contains($item);
     }
 
-    public function getIterator() : \Iterator
+    public function getIterator(): \Iterator
     {
         return new \ArrayIterator($this->configs);
     }
 
-    public function clear() : void
+    public function clear(): void
     {
         if ($this->readOnly) {
             throw new \InvalidArgumentException('This set is readonly');
@@ -350,12 +329,12 @@ class ATNConfigSet implements Hashable
         $this->configLookup = new Set();
     }
 
-    public function isReadOnly() : bool
+    public function isReadOnly(): bool
     {
         return $this->readOnly;
     }
 
-    public function setReadonly(bool $readOnly) : void
+    public function setReadonly(bool $readOnly): void
     {
         $this->readOnly = $readOnly;
 
@@ -364,17 +343,17 @@ class ATNConfigSet implements Hashable
         }
     }
 
-    public function getConflictingAlts() : ?BitSet
+    public function getConflictingAlts(): ?BitSet
     {
         return $this->conflictingAlts;
     }
 
-    public function setConflictingAlts(BitSet $conflictingAlts) : void
+    public function setConflictingAlts(BitSet $conflictingAlts): void
     {
         $this->conflictingAlts = $conflictingAlts;
     }
 
-    public function __toString() : string
+    public function __toString(): string
     {
         return \sprintf(
             '[%s]%s%s%s%s',
@@ -382,7 +361,7 @@ class ATNConfigSet implements Hashable
             $this->hasSemanticContext ? ',hasSemanticContext=' . $this->hasSemanticContext : '',
             $this->uniqueAlt !== ATN::INVALID_ALT_NUMBER ? ',uniqueAlt=' . $this->uniqueAlt : '',
             $this->conflictingAlts !== null ? ',conflictingAlts=' . $this->conflictingAlts : '',
-            $this->dipsIntoOuterContext ? ',dipsIntoOuterContext' : ''
+            $this->dipsIntoOuterContext ? ',dipsIntoOuterContext' : '',
         );
     }
 }

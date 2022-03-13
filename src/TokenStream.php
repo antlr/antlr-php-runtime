@@ -18,7 +18,7 @@ interface TokenStream extends IntStream
      *
      * @see IntStream::LA()
      */
-    public function LT(int $k) : ?Token;
+    public function LT(int $k): ?Token;
 
     /**
      * Gets the {@see Token} at the specified `index` in the stream.
@@ -34,12 +34,12 @@ interface TokenStream extends IntStream
      * of the stream. Unlike {@see TokenStream::seek()}, this method does not adjust
      * `index` to point to a non-ignored symbol.
      */
-    public function get(int $index) : Token;
+    public function get(int $index): Token;
 
     /**
      * Gets the underlying {@see TokenSource} which provides tokens for this stream.
      */
-    public function getTokenSource() : TokenSource;
+    public function getTokenSource(): TokenSource;
 
     /**
      * Return the text of all tokens within the specified `interval`.
@@ -59,7 +59,7 @@ interface TokenStream extends IntStream
      * @return string The text of all tokens within the specified interval
      *                in this stream.
      */
-    public function getTextByInterval(Interval $interval) : string;
+    public function getTextByInterval(Interval $interval): string;
 
     /**
      * Return the text of all tokens in the stream. This method behaves like
@@ -72,7 +72,7 @@ interface TokenStream extends IntStream
      *
      * @return string The text of all tokens in the stream.
      */
-    public function getText() : string;
+    public function getText(): string;
 
     /**
      * Return the text of all tokens in the source interval of the specified context.
@@ -91,7 +91,7 @@ interface TokenStream extends IntStream
      *
      * @return string The text of all tokens within the source interval of `context`.
      */
-    public function getTextByContext(RuleContext $context) : string;
+    public function getTextByContext(RuleContext $context): string;
 
     /**
      * Return the text of all tokens in this stream between `start` and `stop`
@@ -118,5 +118,5 @@ interface TokenStream extends IntStream
      * @return string The text of all tokens lying between the specified
      *                `start` and `stop` tokens.
      */
-    public function getTextByTokens(?Token $start, ?Token $stop) : string;
+    public function getTextByTokens(?Token $start, ?Token $stop): string;
 }

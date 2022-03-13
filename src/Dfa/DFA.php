@@ -16,30 +16,24 @@ final class DFA
      * A set of all DFA states. Use {@see Map} so we can get old state back
      * ({@see Set} only allows you to see if it's there).
      *
-     * @var Set;
+     * @var Set<DFAState>
      */
-    public $states;
+    public Set $states;
 
-    /** @var DFAState|null */
-    public $s0;
+    public ?DFAState $s0 = null;
 
-    /** @var int */
-    public $decision;
+    public int $decision;
 
     /**
      * From which ATN state did we create this DFA?
-     *
-     * @var DecisionState
      */
-    public $atnStartState;
+    public DecisionState $atnStartState;
 
     /**
      * `true` if this DFA is for a precedence decision; otherwise, `false`.
      * This is the backing field for {@see DFA::isPrecedenceDfa()}.
-     *
-     * @var bool
      */
-    private $precedenceDfa;
+    private bool $precedenceDfa;
 
     public function __construct(DecisionState $atnStartState, int $decision = 0)
     {
@@ -71,7 +65,7 @@ final class DFA
      *
      * @see Parser::getPrecedence()
      */
-    public function isPrecedenceDfa() : bool
+    public function isPrecedenceDfa(): bool
     {
         return $this->precedenceDfa;
     }
@@ -87,14 +81,14 @@ final class DFA
      *
      * @throws \InvalidArgumentException If this is not a precedence DFA.
      */
-    public function getPrecedenceStartState(int $precedence) : ?DFAState
+    public function getPrecedenceStartState(int $precedence): ?DFAState
     {
         if (!$this->precedenceDfa || $this->s0 === null) {
             throw new \InvalidArgumentException('Only precedence DFAs may contain a precedence start state.');
         }
 
         if ($this->s0->edges === null) {
-            throw new \RuntimeException('s0.edges cannot be null for a precedence DFA.');
+            throw new \LogicException('s0.edges cannot be null for a precedence DFA.');
         }
 
         if ($precedence < 0 || $precedence >= \count($this->s0->edges)) {
@@ -113,7 +107,7 @@ final class DFA
      *
      * @throws \InvalidArgumentException If this is not a precedence DFA.
      */
-    public function setPrecedenceStartState(int $precedence, DFAState $startState) : void
+    public function setPrecedenceStartState(int $precedence, DFAState $startState): void
     {
         if (!$this->precedenceDfa || $this->s0 === null) {
             throw new \InvalidArgumentException('Only precedence DFAs may contain a precedence start state.');
@@ -123,18 +117,20 @@ final class DFA
             return;
         }
 
-        if ($this->s0->edges === null) {
-            throw new \RuntimeException('Unexpected null edges.');
+        $edges = $this->s0->edges;
+
+        if ($edges === null) {
+            throw new \LogicException('Unexpected null edges.');
         }
 
-        if ($precedence >= $this->s0->edges->count()) {
-            $this->s0->edges->setSize($precedence + 1);
+        if ($precedence >= $edges->count()) {
+            $edges->setSize($precedence + 1);
         }
 
         // synchronization on s0 here is ok. when the DFA is turned into a
         // precedence DFA, s0 will be initialized once and not updated again
         // s0.edges is never null for a precedence DFA
-        $this->s0->edges[$precedence] = $startState;
+        $edges[$precedence] = $startState;
     }
 
     /**
@@ -142,7 +138,7 @@ final class DFA
      *
      * @return array<DFAState>
      */
-    public function getStates() : array
+    public function getStates(): array
     {
         $list = $this->states->getValues();
 
@@ -153,12 +149,12 @@ final class DFA
         return $list;
     }
 
-    public function __toString() : string
+    public function __toString(): string
     {
         return $this->toString(VocabularyImpl::emptyVocabulary());
     }
 
-    public function toString(Vocabulary $vocabulary) : string
+    public function toString(Vocabulary $vocabulary): string
     {
         if ($this->s0 === null) {
             return '';
@@ -169,7 +165,7 @@ final class DFA
         return (string) $serializer;
     }
 
-    public function toLexerString() : string
+    public function toLexerString(): string
     {
         if ($this->s0 === null) {
             return '';
