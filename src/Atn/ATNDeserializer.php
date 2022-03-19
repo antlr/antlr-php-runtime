@@ -138,11 +138,6 @@ final class ATNDeserializer
             }
 
             $ruleIndex = $this->readInt();
-
-            if ($ruleIndex === 0xFFFF) {
-                $ruleIndex = -1;
-            }
-
             $s = $this->stateFactory($stype, $ruleIndex);
 
             if ($stype === ATNState::LOOP_END) {
@@ -222,11 +217,6 @@ final class ATNDeserializer
 
             if ($atn->grammarType === ATN::ATN_TYPE_LEXER) {
                 $tokenType = $this->readInt();
-
-                if ($tokenType === 0xFFFF) {
-                    $tokenType = Token::EOF;
-                }
-
                 $atn->ruleToTokenType[$i] = $tokenType;
             }
         }
@@ -380,17 +370,7 @@ final class ATNDeserializer
             for ($i = 0; $i < $count; $i++) {
                 $actionType = $this->readInt();
                 $data1 = $this->readInt();
-
-                if ($data1 === 0xFFFF) {
-                    $data1 = -1;
-                }
-
                 $data2 = $this->readInt();
-
-                if ($data2 === 0xFFFF) {
-                    $data2 = -1;
-                }
-
                 $lexerAction = $this->lexerActionFactory($actionType, $data1, $data2);
                 $atn->lexerActions[$i] = $lexerAction;
             }
