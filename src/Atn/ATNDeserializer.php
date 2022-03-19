@@ -73,17 +73,7 @@ final class ATNDeserializer
         $this->readRules($atn);
         $this->readModes($atn);
         $sets = [];
-
-        // First, deserialize sets with 16-bit arguments <= U+FFFF.
-        $this->readSets($sets, function () {
-            return $this->readInt();
-        });
-
-        // Next, deserialize sets with 32-bit arguments <= U+10FFFF.
-        $this->readSets($sets, function () {
-            return $this->readInt32();
-        });
-
+        $this->readSets($sets);
         $this->readEdges($atn, $sets);
         $this->readDecisions($atn);
         $this->readLexerActions($atn);
@@ -138,11 +128,6 @@ final class ATNDeserializer
             }
 
             $ruleIndex = $this->readInt();
-
-            if ($ruleIndex === 0xFFFF) {
-                $ruleIndex = -1;
-            }
-
             $s = $this->stateFactory($stype, $ruleIndex);
 
             if ($stype === ATNState::LOOP_END) {
@@ -222,11 +207,6 @@ final class ATNDeserializer
 
             if ($atn->grammarType === ATN::ATN_TYPE_LEXER) {
                 $tokenType = $this->readInt();
-
-                if ($tokenType === 0xFFFF) {
-                    $tokenType = Token::EOF;
-                }
-
                 $atn->ruleToTokenType[$i] = $tokenType;
             }
         }
@@ -260,7 +240,7 @@ final class ATNDeserializer
     /**
      * @param array<IntervalSet> $sets
      */
-    private function readSets(array &$sets, callable $readUnicode): void
+    private function readSets(array &$sets): void
     {
         $m = $this->readInt();
 
@@ -276,8 +256,8 @@ final class ATNDeserializer
             }
 
             for ($j=0; $j < $n; $j++) {
-                $i1 = $readUnicode();
-                $i2 = $readUnicode();
+                $i1 = $this->readInt();
+                $i2 = $this->readInt();
                 $iset->addRange($i1, $i2);
             }
         }
@@ -380,17 +360,7 @@ final class ATNDeserializer
             for ($i = 0; $i < $count; $i++) {
                 $actionType = $this->readInt();
                 $data1 = $this->readInt();
-
-                if ($data1 === 0xFFFF) {
-                    $data1 = -1;
-                }
-
                 $data2 = $this->readInt();
-
-                if ($data2 === 0xFFFF) {
-                    $data2 = -1;
-                }
-
                 $lexerAction = $this->lexerActionFactory($actionType, $data1, $data2);
                 $atn->lexerActions[$i] = $lexerAction;
             }
@@ -626,14 +596,6 @@ final class ATNDeserializer
     private function readInt(): int
     {
         return $this->data[$this->pos++];
-    }
-
-    private function readInt32(): int
-    {
-        $low = $this->readInt();
-        $high = $this->readInt();
-
-        return $low | ($high << 16);
     }
 
     /**
