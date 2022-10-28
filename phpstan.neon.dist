@@ -17,17 +17,8 @@ parameters:
             tooWideThrowType: true
     ignoreErrors:
         -
-            path: src/Dfa/DFA.php
-            message: '#^Property Antlr\\Antlr4\\Runtime\\Dfa\\DFAState\:\:\$edges \(SplFixedArray\<Antlr\\Antlr4\\Runtime\\Dfa\\DFAState\>\|null\) does not accept SplFixedArray\<mixed\>.$#'
-        -
-            path: src/Atn/ParserATNSimulator.php
-            message: '#^Property Antlr\\Antlr4\\Runtime\\Dfa\\DFAState\:\:\$edges \(SplFixedArray\<Antlr\\Antlr4\\Runtime\\Dfa\\DFAState\>\|null\) does not accept SplFixedArray\<mixed\>.$#'
-        -
             path: src/Atn/ParserATNSimulator.php
             message: '#^Property Antlr\\Antlr4\\Runtime\\Dfa\\DFAState\:\:\$edges \(SplFixedArray\<Antlr\\Antlr4\\Runtime\\Dfa\\DFAState\>\|null\) does not accept non\-empty\-array\<int\<0, max\>, Antlr\\Antlr4\\Runtime\\Dfa\\DFAState\>\|SplFixedArray\<Antlr\\Antlr4\\Runtime\\Dfa\\DFAState\>\.$#'
-        -
-            path: src/Atn/LexerATNSimulator.php
-            message: '#^Property Antlr\\Antlr4\\Runtime\\Dfa\\DFAState\:\:\$edges \(SplFixedArray\<Antlr\\Antlr4\\Runtime\\Dfa\\DFAState\>\|null\) does not accept SplFixedArray\<mixed\>\.$#'
         -
             path: src/Atn/LexerATNSimulator.php
             message: '#^Property Antlr\\Antlr4\\Runtime\\Dfa\\DFAState\:\:\$edges \(SplFixedArray\<Antlr\\Antlr4\\Runtime\\Dfa\\DFAState\>\|null\) does not accept non\-empty\-array\<int\<0, 127\>, Antlr\\Antlr4\\Runtime\\Dfa\\DFAState\>\|SplFixedArray\<Antlr\\Antlr4\\Runtime\\Dfa\\DFAState\>\.$#'
