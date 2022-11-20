@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: symfonycorp/security-checker-action@v2
+      - uses: symfonycorp/security-checker-action@v3
 
   composer:
     runs-on: ubuntu-latest
@@ -27,16 +27,19 @@ jobs:
         with:
           php-version: '8.1'
           tools: composer:v2
+
       - name: Composer cache
         uses: actions/cache@v2
         with:
           key: composer-${{ hashFiles('**/composer.lock') }}
           path: ${{ github.workspace }}/.cache
+
       - name: Vendor cache
         uses: actions/cache@v2
         with:
           key: vendor-${{ hashFiles('**/composer.lock') }}
           path: ${{ github.workspace }}/vendor
+
       - name: Tools cache
         uses: actions/cache@v2
         with:
@@ -68,16 +71,19 @@ jobs:
         with:
           php-version: '8.1'
           tools: composer:v2
+
       - name: Composer cache
         uses: actions/cache@v2
         with:
           key: composer-${{ hashFiles('**/composer.lock') }}
           path: ${{ github.workspace }}/.cache
+
       - name: Vendor cache
         uses: actions/cache@v2
         with:
           key: vendor-${{ hashFiles('**/composer.lock') }}
           path: ${{ github.workspace }}/vendor
+
       - name: Tools cache
         uses: actions/cache@v2
         with:
