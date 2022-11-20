@@ -24,6 +24,7 @@ use Antlr\Antlr4\Runtime\Error\Exceptions\NoViableAltException;
 use Antlr\Antlr4\Runtime\Error\Exceptions\RecognitionException;
 use Antlr\Antlr4\Runtime\IntervalSet;
 use Antlr\Antlr4\Runtime\IntStream;
+use Antlr\Antlr4\Runtime\LoggerProvider;
 use Antlr\Antlr4\Runtime\Parser;
 use Antlr\Antlr4\Runtime\ParserRuleContext;
 use Antlr\Antlr4\Runtime\PredictionContexts\PredictionContext;
@@ -35,6 +36,7 @@ use Antlr\Antlr4\Runtime\TokenStream;
 use Antlr\Antlr4\Runtime\Utils\BitSet;
 use Antlr\Antlr4\Runtime\Utils\DoubleKeyMap;
 use Antlr\Antlr4\Runtime\Utils\Set;
+use Psr\Log\LoggerInterface as Logger;
 
 /**
  * The embodiment of the adaptive LL(*), ALL(*), parsing strategy.
@@ -231,6 +233,8 @@ use Antlr\Antlr4\Runtime\Utils\Set;
  */
 final class ParserATNSimulator extends ATNSimulator
 {
+    public static bool $traceAtnSimulation = false;
+
     protected Parser $parser;
 
     /** @var array<DFA> */
@@ -260,6 +264,8 @@ final class ParserATNSimulator extends ATNSimulator
 
     protected ?DFA $dfa = null;
 
+    private Logger $logger;
+
     /**
      * @param array<DFA> $decisionToDFA
      */
@@ -273,6 +279,7 @@ final class ParserATNSimulator extends ATNSimulator
 
         $this->parser = $parser;
         $this->decisionToDFA = $decisionToDFA;
+        $this->logger = LoggerProvider::getLogger();
     }
 
     public function reset(): void
@@ -296,6 +303,18 @@ final class ParserATNSimulator extends ATNSimulator
      */
     public function adaptivePredict(TokenStream $input, int $decision, ParserRuleContext $outerContext): int
     {
+        if (self::$traceAtnSimulation) {
+            $this->logger->debug(
+                'adaptivePredict decision {decision} exec LA(1)=={token} line {line}:{pos}',
+                [
+                    'decision' => $decision,
+                    'token' => $this->getTokenName($input->LA(1)),
+                    'line' => $input->LT(1)?->getLine(),
+                    'pos' => $input->LT(1)?->getCharPositionInLine(),
+                ],
+            );
+        }
+
         $this->input = $input;
         $this->startIndex = $input->getIndex();
         $this->outerContext = $outerContext;
@@ -404,6 +423,19 @@ final class ParserATNSimulator extends ATNSimulator
         int $startIndex,
         ParserRuleContext $outerContext,
     ): ?int {
+        if (self::$traceAtnSimulation) {
+            $this->logger->debug(
+                'execATN decision {decision}, DFA state {state}, LA(1)=={token} line {line}:{pos}',
+                [
+                    'decision' => $dfa->decision,
+                    'state' => $s0->__toString(),
+                    'token' => $this->getTokenName($input->LA(1)),
+                    'line' => $input->LT(1)?->getLine(),
+                    'pos' => $input->LT(1)?->getCharPositionInLine(),
+                ],
+            );
+        }
+
         $previousD = $s0;
 
         $t = $input->LA(1);
@@ -655,6 +687,12 @@ final class ParserATNSimulator extends ATNSimulator
         int $startIndex,
         ParserRuleContext $outerContext,
     ): int {
+        if (self::$traceAtnSimulation) {
+            $this->logger->debug('execATNWithFullContext {state}', [
+                'state' => $s0->__toString(),
+            ]);
+        }
+
         $fullCtx = true;
         $foundExactAmbig = false;
         $reach = null;
@@ -899,6 +937,13 @@ final class ParserATNSimulator extends ATNSimulator
             }
         }
 
+        if (self::$traceAtnSimulation) {
+            $this->logger->debug('computeReachSet {closure} -> {reach}', [
+                'closure' => $closure->__toString(),
+                'reach' => $reach->__toString(),
+            ]);
+        }
+
         if ($reach->isEmpty()) {
             return null;
         }
@@ -963,6 +1008,13 @@ final class ParserATNSimulator extends ATNSimulator
         // Always at least the implicit call to start rule
         $initialContext = PredictionContext::fromRuleContext($this->atn, $ctx);
         $configs = new ATNConfigSet($fullCtx);
+
+        if (self::$traceAtnSimulation) {
+            $this->logger->debug('computeStartState from ATN state {state} initialContext={initialContext}', [
+                'state' => $p->__toString(),
+                'initialContext' => $initialContext->__toString(),
+            ]);
+        }
 
         foreach ($p->getTransitions() as $i => $t) {
             $c = new ATNConfig(null, $t->target, $initialContext, null, $i + 1);
@@ -1464,6 +1516,12 @@ final class ParserATNSimulator extends ATNSimulator
         int $depth,
         bool $treatEofAsEpsilon,
     ): void {
+        if (self::$traceAtnSimulation) {
+            $this->logger->debug('closure({config})', [
+                'config' => $config->toString(true),
+            ]);
+        }
+
         if ($config->state instanceof RuleStopState) {
             // We hit rule end. If we have context info, use it run thru all possible stack tops in ctx
             $context = $config->context;
@@ -2150,6 +2208,12 @@ final class ParserATNSimulator extends ATNSimulator
         $existing = $dfa->states->get($D);
 
         if ($existing instanceof DFAState) {
+            if (self::$traceAtnSimulation) {
+                $this->logger->debug('addDFAState {state} exists', [
+                    'state' => $D->__toString(),
+                ]);
+            }
+
             return $existing;
         }
 
@@ -2158,6 +2222,12 @@ final class ParserATNSimulator extends ATNSimulator
         if (!$D->configs->isReadOnly()) {
             $D->configs->optimizeConfigs($this);
             $D->configs->setReadonly(true);
+        }
+
+        if (self::$traceAtnSimulation) {
+            $this->logger->debug('addDFAState new {state}', [
+                'state' => $D->__toString(),
+            ]);
         }
 
         $dfa->states->add($D);

@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Antlr\Antlr4\Runtime\PredictionContexts;
 
 use Antlr\Antlr4\Runtime\Atn\ATN;
+use Antlr\Antlr4\Runtime\Atn\ParserATNSimulator;
 use Antlr\Antlr4\Runtime\Atn\Transitions\RuleTransition;
 use Antlr\Antlr4\Runtime\Comparison\Hashable;
+use Antlr\Antlr4\Runtime\LoggerProvider;
 use Antlr\Antlr4\Runtime\RuleContext;
 use Antlr\Antlr4\Runtime\Utils\DoubleKeyMap;
 
@@ -392,12 +394,28 @@ abstract class PredictionContext implements Hashable
             $previous = $mergeCache->getByTwoKeys($a, $b);
 
             if ($previous !== null) {
+                if (ParserATNSimulator::$traceAtnSimulation) {
+                    LoggerProvider::getLogger()
+                        ->debug('mergeArrays a={a},b={b} -> previous', [
+                            'a' => $a->__toString(),
+                            'b' => $b->__toString(),
+                        ]);
+                }
+
                 return $previous;
             }
 
             $previous = $mergeCache->getByTwoKeys($b, $a);
 
             if ($previous !== null) {
+                if (ParserATNSimulator::$traceAtnSimulation) {
+                    LoggerProvider::getLogger()
+                        ->debug('mergeArrays a={a},b={b} -> previous', [
+                            'a' => $a->__toString(),
+                            'b' => $b->__toString(),
+                        ]);
+                }
+
                 return $previous;
             }
         }
@@ -500,6 +518,14 @@ abstract class PredictionContext implements Hashable
                 $mergeCache->set($a, $b, $a);
             }
 
+            if (ParserATNSimulator::$traceAtnSimulation) {
+                LoggerProvider::getLogger()
+                    ->debug('mergeArrays a={a},b={b} -> a', [
+                        'a' => $a->__toString(),
+                        'b' => $b->__toString(),
+                    ]);
+            }
+
             return $a;
         }
 
@@ -508,11 +534,28 @@ abstract class PredictionContext implements Hashable
                 $mergeCache->set($a, $b, $b);
             }
 
+            if (ParserATNSimulator::$traceAtnSimulation) {
+                LoggerProvider::getLogger()
+                    ->debug('mergeArrays a={a},b={b} -> b', [
+                        'a' => $a->__toString(),
+                        'b' => $b->__toString(),
+                    ]);
+            }
+
             return $b;
         }
 
         if ($mergeCache !== null) {
             $mergeCache->set($a, $b, $M);
+        }
+
+        if (ParserATNSimulator::$traceAtnSimulation) {
+            LoggerProvider::getLogger()
+                ->debug('mergeArrays a={a},b={b} -> M', [
+                    'a' => $a->__toString(),
+                    'b' => $b->__toString(),
+                    'M' => $M->__toString(),
+                ]);
         }
 
         return $M;
