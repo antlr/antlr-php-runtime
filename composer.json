@@ -13,7 +13,6 @@
   "require": {
     "php": "^8.0",
     "ext-mbstring": "*",
-    "monolog/monolog": "^3.2",
     "psr/log": "^3.0"
   },
   "require-dev": {
