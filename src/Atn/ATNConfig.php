@@ -157,7 +157,7 @@ class ATNConfig implements Hashable
             $buf .= ',[' . $this->context . ']';
         }
 
-        if ($this->semanticContext->equals(SemanticContext::none())) {
+        if (!$this->semanticContext->equals(SemanticContext::none())) {
             $buf .= ',' . $this->semanticContext;
         }
 
@@ -177,9 +177,9 @@ class ATNConfig implements Hashable
             $this->state,
             $this->alt,
             $this->context !== null ? ',[' . $this->context . ']' : '',
-            $this->semanticContext->equals(SemanticContext::none()) ?
-                ',' . $this->semanticContext :
-                '',
+            $this->semanticContext->equals(SemanticContext::none())
+                ? ''
+                : ',' . $this->semanticContext,
             $this->reachesIntoOuterContext > 0 ? ',up=' . $this->reachesIntoOuterContext : '',
         );
     }
