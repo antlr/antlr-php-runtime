@@ -38,6 +38,14 @@ final class Pair implements Equatable
 
     public function __toString(): string
     {
-        return \sprintf('%s, %s', (string) $this->a, (string) $this->b);
+        return \sprintf(
+            '%s, %s',
+            $this->a === null
+                ? 'null'
+                : ($this->a instanceof \Stringable ? (string) $this->a : $this->a::class),
+            $this->b === null
+                ? 'null'
+                : ($this->b instanceof \Stringable ? (string) $this->b : $this->b::class),
+        );
     }
 }

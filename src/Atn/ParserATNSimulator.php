@@ -928,10 +928,6 @@ final class ParserATNSimulator extends ATNSimulator
          * multiple alternatives are viable.*/
 
         if ($skippedStopStates !== null && (!$fullCtx || !PredictionMode::hasConfigInRuleStopState($reach))) {
-            if (\count($skippedStopStates) === 0) {
-                throw new \LogicException('Skipped stop states cannot be empty.');
-            }
-
             foreach ($skippedStopStates as $lValue) {
                 $reach->add($lValue, $this->mergeCache);
             }

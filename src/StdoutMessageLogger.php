@@ -10,7 +10,8 @@ use Psr\Log\LoggerInterface as Logger;
 final class StdoutMessageLogger extends AbstractLogger implements Logger
 {
     /**
-     * {@inheritDoc}
+     * @param mixed        $level
+     * @param array<mixed> $context
      */
     public function log($level, \Stringable|string $message, array $context = []): void
     {
@@ -20,13 +21,13 @@ final class StdoutMessageLogger extends AbstractLogger implements Logger
     /**
      * @param array<string, mixed> $context
      */
-    private static function formatMessage(string $message, array $context): string
+    private static function formatMessage(\Stringable|string $message, array $context): string
     {
         $replace = [];
         foreach ($context as $key => $val) {
             $replace['{' . $key . '}'] = $val;
         }
 
-        return \strtr($message, $replace);
+        return \strtr((string) $message, $replace);
     }
 }
