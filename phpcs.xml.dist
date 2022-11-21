@@ -636,7 +636,7 @@
         <severity>5</severity>
     </rule>
 
-    <rule ref="SlevomatCodingStandard.TypeHints.DeclareStrictTypes.DeclareStrictTypesMissing ">
+    <rule ref="SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingNativeTypeHint">
         <exclude-pattern>src/StdoutMessageLogger.php</exclude-pattern>
     </rule>
 
