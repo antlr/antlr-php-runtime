@@ -12,7 +12,8 @@
   ],
   "require": {
     "php": "^8.0",
-    "ext-mbstring": "*"
+    "ext-mbstring": "^8.0",
+    "psr/log": "^2.0 || ^3.0"
   },
   "require-dev": {
     "ergebnis/composer-normalize": "^2.15",
