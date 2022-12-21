@@ -11,6 +11,7 @@ use Antlr\Antlr4\Runtime\Comparison\Hashable;
 use Antlr\Antlr4\Runtime\LoggerProvider;
 use Antlr\Antlr4\Runtime\RuleContext;
 use Antlr\Antlr4\Runtime\Utils\DoubleKeyMap;
+use Antlr\Antlr4\Runtime\Utils\Map;
 
 abstract class PredictionContext implements Hashable
 {
@@ -294,6 +295,11 @@ abstract class PredictionContext implements Hashable
                 $payloads[1] = $a->returnState;
                 $parents = [$b->parent, $a->parent];
             }
+            else {
+                $payloads[0] = $a->returnState;
+                $payloads[1] = $b->returnState;
+                $parents = [$a->parent, $b->parent];
+            }
 
             $a_ = new ArrayPredictionContext($parents, $payloads);
 
@@ -426,7 +432,13 @@ abstract class PredictionContext implements Hashable
         $k = 0;// walks target M array
 
         $mergedReturnStates = [];
+        for ($ini = 0; $ini < \count($a->returnStates) + \count($b->returnStates); $ini++) {
+                $mergedReturnStates[$ini] = null;
+        }
         $mergedParents = [];
+        for ($ini = 0; $ini < \count($a->returnStates) + \count($b->returnStates); $ini++) {
+                $mergedParents[$ini] = null;
+        }
 
         // walk and merge to yield mergedParents, mergedReturnStates
         while ($i < \count($a->returnStates) && $j < \count($b->returnStates)) {
@@ -475,14 +487,18 @@ abstract class PredictionContext implements Hashable
         }
 
         // copy over any payloads remaining in either array
-        if ($i < \count($a->returnStates)) {
-            for ($p = $i, $count = \count($a->returnStates); $p < $count; $p++) {
+        if ($i < \count($a->returnStates))
+        {
+            for ($p = $i; $p < \count($a->returnStates); $p++)
+            {
                 $mergedParents[$k] = $a->parents[$p];
                 $mergedReturnStates[$k] = $a->returnStates[$p];
                 $k++;
             }
-        } else {
-            for ($p = $j, $count = \count($b->returnStates); $p < $count; $p++) {
+        }
+        else {
+            for ($p = $j; $p < \count($b->returnStates); $p++)
+            {
                 $mergedParents[$k] = $b->parents[$p];
                 $mergedReturnStates[$k] = $b->returnStates[$p];
                 $k++;
@@ -492,28 +508,27 @@ abstract class PredictionContext implements Hashable
         // trim merged if we combined a few that had same stack tops
         if ($k < \count($mergedParents)) {
             // write index < last position; trim
-            if ($k === 1) {
-                // for just one merged element, return singleton top
+            if ($k === 1)
+            { // for just one merged element, return singleton top
                 $a_ = SingletonPredictionContext::create($mergedParents[0], $mergedReturnStates[0]);
 
-                if ($mergeCache !== null) {
-                    $mergeCache->set($a, $b, $a_);
-                }
+                if ($mergeCache !== null) $mergeCache->set($a, $b, $a_);
 
                 return $a_;
             }
 
+            // mergedParents = Arrays.CopyOf(mergedParents, k);
             $mergedParents = \array_slice($mergedParents, 0, $k);
+            // mergedReturnStates = Arrays.CopyOf(mergedReturnStates, k);
             $mergedReturnStates = \array_slice($mergedReturnStates, 0, $k);
         }
 
-        self::combineCommonParents($mergedParents);
 
         $M = new ArrayPredictionContext($mergedParents, $mergedReturnStates);
 
         // if we created same array as a or b, return that instead
         // TODO: track whether this is possible above during merge sort for speed
-        if ($M === $a) {
+        if ($M->equals($a)) {
             if ($mergeCache !== null) {
                 $mergeCache->set($a, $b, $a);
             }
@@ -529,7 +544,7 @@ abstract class PredictionContext implements Hashable
             return $a;
         }
 
-        if ($M === $b) {
+        if ($M->equals($b)) {
             if ($mergeCache !== null) {
                 $mergeCache->set($a, $b, $b);
             }
@@ -545,19 +560,20 @@ abstract class PredictionContext implements Hashable
             return $b;
         }
 
-        if ($mergeCache !== null) {
-            $mergeCache->set($a, $b, $M);
-        }
+        self::combineCommonParents($mergedParents);
 
         if (ParserATNSimulator::$traceAtnSimulation) {
             LoggerProvider::getLogger()
-                ->debug('mergeArrays a={a},b={b} -> M', [
+                ->debug('mergeArrays a={a},b={b} -> {M}', [
                     'a' => $a->__toString(),
                     'b' => $b->__toString(),
                     'M' => $M->__toString(),
                 ]);
         }
 
+        if ($mergeCache !== null) {
+            $mergeCache->set($a, $b, $M);
+        }
         return $M;
     }
 
@@ -566,16 +582,18 @@ abstract class PredictionContext implements Hashable
      */
     protected static function combineCommonParents(array &$parents): void
     {
-        $uniqueParents = new \SplObjectStorage();
+        $uniqueParents = new Map();
 
         foreach ($parents as $parent) {
-            if (!$uniqueParents->contains($parent)) {
-                $uniqueParents[$parent] = $parent;
+            if ($parent != null && !$uniqueParents->contains($parent)) {
+                // don't replace.
+                $uniqueParents->put($parent, $parent);
             }
         }
 
         foreach ($parents as $i => $parent) {
-            $parents[$i] = $uniqueParents[$parent];
+            if ($parent != null)
+                $parents[$i] = $uniqueParents->get($parent);
         }
     }
 

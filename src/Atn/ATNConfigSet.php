@@ -13,6 +13,7 @@ use Antlr\Antlr4\Runtime\PredictionContexts\PredictionContext;
 use Antlr\Antlr4\Runtime\Utils\BitSet;
 use Antlr\Antlr4\Runtime\Utils\DoubleKeyMap;
 use Antlr\Antlr4\Runtime\Utils\Set;
+use Antlr\Antlr4\Runtime\Utils\Map;
 
 /**
  * Specialized {@see Set} of `{@see ATNConfig}`s that can track info
@@ -34,7 +35,7 @@ class ATNConfigSet implements Hashable
      * All configs but hashed by (s, i, _, pi) not including context. Wiped out
      * when we go readonly as this set becomes a DFA state.
      */
-    public ?Set $configLookup = null;
+    public ?Map $configLookup = null;
 
     /**
      * Track the elements as they are added to the set; supports get(i).
@@ -82,25 +83,26 @@ class ATNConfigSet implements Hashable
          * not including context. Wiped out when we go readonly as this se
          * becomes a DFA state.
          */
-        $this->configLookup = new Set(new class implements Equivalence {
+        $this->configLookup = new Map(new class implements Equivalence {
             public function equivalent(Hashable $left, Hashable $right): bool
             {
                 if ($left === $right) {
                     return true;
                 }
 
-                if (!$left instanceof ATNConfig || !$right instanceof ATNConfig) {
-                    return false;
-                }
-
-                return $left->alt === $right->alt
-                    && $left->semanticContext->equals($right->semanticContext)
-                    && Equality::equals($left->state, $right->state);
+                if ($left == null || $right == null) return false;
+                return $left->state->stateNumber == $right->state->stateNumber
+                        && $left->alt == $right->alt
+                        && $left->semanticContext->equals($right->semanticContext);
             }
 
             public function hash(Hashable $value): int
             {
-                return $value->hashCode();
+                return Hasher::hash(
+                    $value->state->stateNumber,
+                    $value->alt,
+                    $value->semanticContext,
+                    );              
             }
 
             public function equals(object $other): bool
@@ -140,7 +142,7 @@ class ATNConfigSet implements Hashable
         /** @var ATNConfig $existing */
         $existing = $this->configLookup->getOrAdd($config);
 
-        if ($existing->equals($config)) {
+        if ($existing === $config) {
             $this->cachedHashCode = null;
 
             $this->configs[] = $config; // track order here
@@ -326,7 +328,7 @@ class ATNConfigSet implements Hashable
 
         $this->configs = [];
         $this->cachedHashCode = -1;
-        $this->configLookup = new Set();
+        $this->configLookup = new Map();
     }
 
     public function isReadOnly(): bool

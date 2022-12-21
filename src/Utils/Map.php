@@ -28,6 +28,10 @@ final class Map implements Equatable, \Countable, \IteratorAggregate
         $this->equivalence = $equivalence ?? new DefaultEquivalence();
     }
 
+    public function isEmpty(): bool
+    {
+        return $this->count() === 0;
+    }
     public function count(): int
     {
         return $this->size;
@@ -211,5 +215,33 @@ final class Map implements Equatable, \Countable, \IteratorAggregate
         }
 
         return $left === $right;
+    }
+    public function getOrAdd(Hashable $value): Hashable
+    {
+        $key = $value;
+        $hash = $this->equivalence->hash($value);
+
+        if (!isset($this->table[$hash])) {
+            $this->table[$hash] = [];
+        }
+
+        foreach ($this->table[$hash] as $index => [$entryKey, $entryValue]) {
+            if ($this->equivalence->equivalent($key, $entryKey)) {
+                return $entryValue;
+            }
+        }
+
+        foreach ($this->table[$hash] as $index => [$entryKey]) {
+            if ($this->equivalence->equivalent($key, $entryKey)) {
+                $this->table[$hash][$index] = [$key, $value];
+                return $value;
+            }
+        }
+
+        $this->table[$hash][] = [$key, $value];
+
+        $this->size++;
+
+        return $value;
     }
 }
