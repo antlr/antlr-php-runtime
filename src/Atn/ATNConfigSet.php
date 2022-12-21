@@ -135,7 +135,7 @@ class ATNConfigSet implements Hashable
             $this->hasSemanticContext = true;
         }
 
-        if ($config->reachesIntoOuterContext > 0) {
+        if ($config->getOuterContextDepth() > 0) {
             $this->dipsIntoOuterContext = true;
         }
 
