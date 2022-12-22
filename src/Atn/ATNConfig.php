@@ -180,7 +180,7 @@ class ATNConfig implements Hashable
             $this->semanticContext->equals(SemanticContext::none())
                 ? ''
                 : ',' . $this->semanticContext,
-            $this->reachesIntoOuterContext > 0 ? ',up=' . $this->reachesIntoOuterContext : '',
+            $this->reachesIntoOuterContext > 0 ? ',up=' . $this->getOuterContextDepth() : '',
         );
     }
 }

@@ -360,7 +360,7 @@ class ATNConfigSet implements Hashable
         return \sprintf(
             '[%s]%s%s%s%s',
             \implode(', ', $this->configs),
-            $this->hasSemanticContext ? ',hasSemanticContext=' . $this->hasSemanticContext : '',
+            $this->hasSemanticContext ? ',hasSemanticContext=true' : '',
             $this->uniqueAlt !== ATN::INVALID_ALT_NUMBER ? ',uniqueAlt=' . $this->uniqueAlt : '',
             $this->conflictingAlts !== null ? ',conflictingAlts=' . $this->conflictingAlts : '',
             $this->dipsIntoOuterContext ? ',dipsIntoOuterContext' : '',
