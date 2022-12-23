@@ -27,17 +27,17 @@ final class ParserTraceListener implements ParseTreeListener
             $this->parser->getRuleNames()[$context->getRuleIndex()],
             $token === null? '' : $token->getText() ?? '',
         );
-        print("\n");
+        echo \PHP_EOL;
     }
 
     public function visitTerminal(TerminalNode $node): void
     {
-        print \sprintf(
+        echo \sprintf(
             'consume %s rule %s',
             $node->getSymbol(),
             $this->parser->getCurrentRuleName(),
         );
-        print("\n");
+        echo \PHP_EOL;
     }
 
     public function exitEveryRule(ParserRuleContext $context): void
@@ -45,12 +45,12 @@ final class ParserTraceListener implements ParseTreeListener
         $stream = $this->parser->getTokenStream();
         $token = $stream?->LT(1);
 
-        print \sprintf(
+        echo \sprintf(
             'exit    %s, LT(1)=%s',
             $this->parser->getRuleNames()[$context->getRuleIndex()],
             $token === null? '' : $token->getText() ?? '',
         );
-        print("\n");
+        echo \PHP_EOL;
     }
 
     public function visitErrorNode(ErrorNode $node): void
