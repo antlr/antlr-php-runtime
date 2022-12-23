@@ -90,7 +90,7 @@ class ATNConfigSet implements Hashable
                     return true;
                 }
 
-                if ($left == null || $right == null) return false;
+                if ($left === null || $right === null) return false;
                 return true;
             }
 
