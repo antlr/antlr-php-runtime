@@ -91,13 +91,12 @@ class ATNConfigSet implements Hashable
                 }
 
                 if ($left == null || $right == null) return false;
-                return $left->state->stateNumber == $right->state->stateNumber
-                        && $left->alt == $right->alt
-                        && $left->semanticContext->equals($right->semanticContext);
+                return true;
             }
 
             public function hash(Hashable $value): int
             {
+                if (!($value instanceof ATNConfig)) return 0;
                 return Hasher::hash(
                     $value->state->stateNumber,
                     $value->alt,
