@@ -21,7 +21,7 @@ final class OrderedATNConfigSet extends ATNConfigSet
                 if ($left === $right) {
                     return true;
                 }
-                if ($left == null || $right == null) return false;
+                if ($left === null || $right === null) return false;
                 return $left->equals($right);
             }
 
