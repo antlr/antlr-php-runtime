@@ -3,11 +3,9 @@
 declare(strict_types=1);
 
 namespace Antlr\Antlr4\Runtime\Atn;
-use Antlr\Antlr4\Runtime\Comparison\Equality;
+
 use Antlr\Antlr4\Runtime\Comparison\Equivalence;
 use Antlr\Antlr4\Runtime\Comparison\Hashable;
-use Antlr\Antlr4\Runtime\Comparison\Hasher;
-use Antlr\Antlr4\Runtime\Utils\Map;
 
 final class OrderedATNConfigSet extends ATNConfigSet
 {
@@ -23,9 +21,14 @@ final class OrderedATNConfigSet extends ATNConfigSet
                 }
 
                 /** @phpstan-ignore-next-line */
-	        if ($left == null) return false;
+                if ($left === null) {
+                    return false;
+                }
+
                 /** @phpstan-ignore-next-line */
-		if ($right == null) return false;
+                if ($right === null) {
+                    return false;
+                }
 
                 return $left->equals($right);
             }

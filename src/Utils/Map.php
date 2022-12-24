@@ -32,6 +32,7 @@ class Map implements Equatable, \Countable, \IteratorAggregate
     {
         return $this->count() === 0;
     }
+
     public function count(): int
     {
         return $this->size;
@@ -136,7 +137,7 @@ class Map implements Equatable, \Countable, \IteratorAggregate
 
     public function equals(object $other): bool
     {
-	return false;
+        return false;
     }
 
     /**
@@ -189,11 +190,10 @@ class Map implements Equatable, \Countable, \IteratorAggregate
 
         return $left === $right;
     }
-    
+
     /**
      * @param K $key
      * @param V $value
-     * @return bool
      */
     public function tryGetValue(Hashable $key, mixed &$value): bool
     {
@@ -206,10 +206,11 @@ class Map implements Equatable, \Countable, \IteratorAggregate
         foreach ($this->table[$hash] as $index => [$entryKey, $entryValue]) {
             if ($this->equivalence->equivalent($key, $entryKey)) {
                 $value = $entryValue;
-		return true;
+
+                return true;
             }
         }
 
-	return false;
+        return false;
     }
 }

@@ -6,14 +6,13 @@ namespace Antlr\Antlr4\Runtime\Atn;
 
 use Antlr\Antlr4\Runtime\Atn\SemanticContexts\SemanticContext;
 use Antlr\Antlr4\Runtime\Comparison\Equality;
-use Antlr\Antlr4\Runtime\Comparison\Equivalence;
 use Antlr\Antlr4\Runtime\Comparison\Hashable;
 use Antlr\Antlr4\Runtime\Comparison\Hasher;
 use Antlr\Antlr4\Runtime\PredictionContexts\PredictionContext;
 use Antlr\Antlr4\Runtime\Utils\BitSet;
 use Antlr\Antlr4\Runtime\Utils\DoubleKeyMap;
-use Antlr\Antlr4\Runtime\Utils\Set;
 use Antlr\Antlr4\Runtime\Utils\Map;
+use Antlr\Antlr4\Runtime\Utils\Set;
 
 /**
  * Specialized {@see Set} of `{@see ATNConfig}`s that can track info
@@ -282,7 +281,9 @@ class ATNConfigSet implements Hashable
             throw new \InvalidArgumentException('This method is not implemented for readonly sets.');
         }
 
-	if (!($item instanceof ATNConfig)) return false;
+        if (!($item instanceof ATNConfig)) {
+            return false;
+        }
 
         return $this->configLookup->contains($item);
     }

@@ -294,8 +294,7 @@ abstract class PredictionContext implements Hashable
                 $payloads[0] = $b->returnState;
                 $payloads[1] = $a->returnState;
                 $parents = [$b->parent, $a->parent];
-            }
-            else {
+            } else {
                 $payloads[0] = $a->returnState;
                 $payloads[1] = $b->returnState;
                 $parents = [$a->parent, $b->parent];
@@ -427,15 +426,15 @@ abstract class PredictionContext implements Hashable
         }
 
         // merge sorted payloads a + b => M
-	/** @var int $i */
+        /** @var int $i */
         $i = 0;// walks a
-	/** @var int $j */
+        /** @var int $j */
         $j = 0;// walks b
-	/** @var int $k */
+        /** @var int $k */
         $k = 0;// walks target M array
 
-        /** @var int[] $mergedReturnStates */
-	$mergedReturnStates = [];
+        /** @var array<int> $mergedReturnStates */
+        $mergedReturnStates = [];
         for ($ini = 0; $ini < \count($a->returnStates) + \count($b->returnStates); $ini++) {
                 $mergedReturnStates[$ini] = 0;
         }
@@ -491,18 +490,18 @@ abstract class PredictionContext implements Hashable
         }
 
         // copy over any payloads remaining in either array
-        if ($i < \count($a->returnStates))
-        {
-            for ($p = $i; $p < \count($a->returnStates); $p++)
-            {
+        if ($i < \count($a->returnStates)) {
+            /** @var int $p */
+            $p = $j;
+            for (; $p < \count($b->returnStates); $p++) {
                 $mergedParents[$k] = $a->parents[$p];
                 $mergedReturnStates[$k] = $a->returnStates[$p];
                 $k++;
             }
-        }
-        else {
-            for ($p = $j; $p < \count($b->returnStates); $p++)
-            {
+        } else {
+            /** @var int $p */
+            $p = $j;
+            for (; $p < \count($b->returnStates); $p++) {
                 $mergedParents[$k] = $b->parents[$p];
                 $mergedReturnStates[$k] = $b->returnStates[$p];
                 $k++;
@@ -512,11 +511,13 @@ abstract class PredictionContext implements Hashable
         // trim merged if we combined a few that had same stack tops
         if ($k < \count($mergedParents)) {
             // write index < last position; trim
-            if ($k === 1)
-            { // for just one merged element, return singleton top
+            if ($k === 1) {
+                // for just one merged element, return singleton top
                 $a_ = SingletonPredictionContext::create($mergedParents[0], $mergedReturnStates[0]);
 
-                if ($mergeCache !== null) $mergeCache->set($a, $b, $a_);
+                if ($mergeCache !== null) {
+                    $mergeCache->set($a, $b, $a_);
+                }
 
                 return $a_;
             }
@@ -526,7 +527,6 @@ abstract class PredictionContext implements Hashable
             // mergedReturnStates = Arrays.CopyOf(mergedReturnStates, k);
             $mergedReturnStates = \array_slice($mergedReturnStates, 0, $k);
         }
-
 
         $M = new ArrayPredictionContext($mergedParents, $mergedReturnStates);
 
@@ -578,28 +578,30 @@ abstract class PredictionContext implements Hashable
         if ($mergeCache !== null) {
             $mergeCache->set($a, $b, $M);
         }
+
         return $M;
     }
 
     /**
-     * @param array<PredictionContext> $parents
+     * @param array<PredictionContext|null> $parents
      */
     protected static function combineCommonParents(array &$parents): void
     {
+        /** @var Map<PredictionContext, PredictionContext> $uniqueParents */
         $uniqueParents = new Map();
 
+        /** @var PredictionContext|null $parent */
         foreach ($parents as $parent) {
-            /** @phpstan-ignore-next-line */
-            if ($parent != null && !$uniqueParents->contains($parent)) {
+            if ($parent !== null && !$uniqueParents->contains($parent)) {
                 // don't replace.
                 $uniqueParents->put($parent, $parent);
             }
         }
 
         foreach ($parents as $i => $parent) {
-            /** @phpstan-ignore-next-line */
-            if ($parent != null)
+            if ($parent !== null) {
                 $parents[$i] = $uniqueParents->get($parent);
+            }
         }
     }
 

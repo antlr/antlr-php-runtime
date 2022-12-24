@@ -4,15 +4,9 @@ declare(strict_types=1);
 
 namespace Antlr\Antlr4\Runtime\Atn;
 
-use Antlr\Antlr4\Runtime\Atn\SemanticContexts\SemanticContext;
-use Antlr\Antlr4\Runtime\Comparison\Equality;
 use Antlr\Antlr4\Runtime\Comparison\Equivalence;
 use Antlr\Antlr4\Runtime\Comparison\Hashable;
 use Antlr\Antlr4\Runtime\Comparison\Hasher;
-use Antlr\Antlr4\Runtime\PredictionContexts\PredictionContext;
-use Antlr\Antlr4\Runtime\Utils\BitSet;
-use Antlr\Antlr4\Runtime\Utils\DoubleKeyMap;
-use Antlr\Antlr4\Runtime\Utils\Set;
 use Antlr\Antlr4\Runtime\Utils\Map;
 
 /**
@@ -24,57 +18,61 @@ use Antlr\Antlr4\Runtime\Utils\Map;
  */
 final class ConfigHashSet extends Map
 {
-	public function __construct(Equivalence $comparer = null)
-	{
-		if ($comparer === null)
-			parent::__construct(new class implements Equivalence {
-				public function equivalent(Hashable $left, Hashable $right): bool
-				{
-					if ($left === $right) {
-						return true;
-					}
+    public function __construct(?Equivalence $comparer = null)
+    {
+        if ($comparer === null) {
+            parent::__construct(new class implements Equivalence {
+                public function equivalent(Hashable $left, Hashable $right): bool
+                {
+                    if (! $left instanceof ATNConfig) {
+                        return false;
+                    }
 
-					/** @phpstan-ignore-next-line */
-					if ($left == null) return false;
-					/** @phpstan-ignore-next-line */
-					if ($right == null) return false;
+                    if (! $right instanceof ATNConfig) {
+                        return false;
+                    }
 
-					if (! $left instanceof ATNConfig) return false;
-					if (! $right instanceof ATNConfig) return false;
+                    if ($left === $right) {
+                        return true;
+                    }
 
-					return $left->state->stateNumber === $right->state->stateNumber
-							&& $left->alt === $right->alt
-							&& $left->semanticContext->equals($right->semanticContext);
-				}
+                    return $left->state->stateNumber === $right->state->stateNumber
+                            && $left->alt === $right->alt
+                            && $left->semanticContext->equals($right->semanticContext);
+                }
 
-				public function hash(Hashable $value): int
-				{
-					if (!($value instanceof ATNConfig)) return 0;
-					return Hasher::hash(
-						$value->state->stateNumber,
-						$value->alt,
-						$value->semanticContext,
-						);              
-				}
+                public function hash(Hashable $value): int
+                {
+                    if (!($value instanceof ATNConfig)) {
+                        return 0;
+                    }
 
-				public function equals(object $other): bool
-				{
-					return $other instanceof self;
-				}
-			});
-		else
-			parent::__construct($comparer);
-	}
+                    return Hasher::hash(
+                        $value->state->stateNumber,
+                        $value->alt,
+                        $value->semanticContext,
+                    );
+                }
 
-	public function getOrAdd(ATNConfig $config): ATNConfig
-	{
-		$existing = null;
-		if ($this->tryGetValue($config, $existing))
-			return $existing;
-		else
-		{
-			$this->put($config, $config);
-			return $config;
-		}
-	}
+                public function equals(object $other): bool
+                {
+                    return $other instanceof self;
+                }
+            });
+        } else {
+            parent::__construct($comparer);
+        }
+    }
+
+    public function getOrAdd(ATNConfig $config): ATNConfig
+    {
+        $existing = null;
+        if ($this->tryGetValue($config, $existing)) {
+            return $existing;
+        } else {
+            $this->put($config, $config);
+
+            return $config;
+        }
+    }
 }
