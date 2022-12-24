@@ -13,7 +13,7 @@ use Antlr\Antlr4\Runtime\Comparison\Hashable;
  * @template K of Hashable
  * @template V
  */
-final class Map implements Equatable, \Countable, \IteratorAggregate
+class Map implements Equatable, \Countable, \IteratorAggregate
 {
     /** @var array<int, array<array{K, V}>> */
     private array $table = [];
@@ -136,34 +136,7 @@ final class Map implements Equatable, \Countable, \IteratorAggregate
 
     public function equals(object $other): bool
     {
-        if ($this === $other) {
-            return true;
-        }
-
-        if (!$other instanceof self
-            || $this->size !== $other->size
-            || !$this->equivalence->equals($other->equivalence)) {
-            return false;
-        }
-
-        foreach ($this->table as $hash => $bucket) {
-            if (!isset($other->table[$hash]) || \count($bucket) !== \count($other->table[$hash])) {
-                return false;
-            }
-
-            $otherBucket = $other->table[$hash];
-
-            foreach ($bucket as $index => [$key, $value]) {
-                [$otherKey, $otherValue] = $otherBucket[$index];
-
-                if (!$this->equivalence->equivalent($key, $otherKey)
-                    || !self::isEqual($value, $otherValue)) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
+	return false;
     }
 
     /**
@@ -216,10 +189,15 @@ final class Map implements Equatable, \Countable, \IteratorAggregate
 
         return $left === $right;
     }
-    public function getOrAdd(Hashable $value): Hashable
+    
+    /**
+     * @param K $key
+     * @param V $value
+     * @return bool
+     */
+    public function tryGetValue(Hashable $key, mixed &$value): bool
     {
-        $key = $value;
-        $hash = $this->equivalence->hash($value);
+        $hash = $this->equivalence->hash($key);
 
         if (!isset($this->table[$hash])) {
             $this->table[$hash] = [];
@@ -227,21 +205,11 @@ final class Map implements Equatable, \Countable, \IteratorAggregate
 
         foreach ($this->table[$hash] as $index => [$entryKey, $entryValue]) {
             if ($this->equivalence->equivalent($key, $entryKey)) {
-                return $entryValue;
+                $value = $entryValue;
+		return true;
             }
         }
 
-        foreach ($this->table[$hash] as $index => [$entryKey]) {
-            if ($this->equivalence->equivalent($key, $entryKey)) {
-                $this->table[$hash][$index] = [$key, $value];
-                return $value;
-            }
-        }
-
-        $this->table[$hash][] = [$key, $value];
-
-        $this->size++;
-
-        return $value;
+	return false;
     }
 }

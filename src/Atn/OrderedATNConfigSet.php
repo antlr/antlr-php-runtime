@@ -15,13 +15,18 @@ final class OrderedATNConfigSet extends ATNConfigSet
     {
         parent::__construct();
 
-        $this->configLookup = new Map(new class implements Equivalence {
+        $this->configLookup = new ConfigHashSet(new class implements Equivalence {
             public function equivalent(Hashable $left, Hashable $right): bool
             {
                 if ($left === $right) {
                     return true;
                 }
-                if ($left === null || $right === null) return false;
+
+                /** @phpstan-ignore-next-line */
+	        if ($left == null) return false;
+                /** @phpstan-ignore-next-line */
+		if ($right == null) return false;
+
                 return $left->equals($right);
             }
 

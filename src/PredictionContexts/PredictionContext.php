@@ -427,13 +427,17 @@ abstract class PredictionContext implements Hashable
         }
 
         // merge sorted payloads a + b => M
+	/** @var int $i */
         $i = 0;// walks a
+	/** @var int $j */
         $j = 0;// walks b
+	/** @var int $k */
         $k = 0;// walks target M array
 
-        $mergedReturnStates = [];
+        /** @var int[] $mergedReturnStates */
+	$mergedReturnStates = [];
         for ($ini = 0; $ini < \count($a->returnStates) + \count($b->returnStates); $ini++) {
-                $mergedReturnStates[$ini] = null;
+                $mergedReturnStates[$ini] = 0;
         }
         $mergedParents = [];
         for ($ini = 0; $ini < \count($a->returnStates) + \count($b->returnStates); $ini++) {
@@ -585,6 +589,7 @@ abstract class PredictionContext implements Hashable
         $uniqueParents = new Map();
 
         foreach ($parents as $parent) {
+            /** @phpstan-ignore-next-line */
             if ($parent != null && !$uniqueParents->contains($parent)) {
                 // don't replace.
                 $uniqueParents->put($parent, $parent);
@@ -592,6 +597,7 @@ abstract class PredictionContext implements Hashable
         }
 
         foreach ($parents as $i => $parent) {
+            /** @phpstan-ignore-next-line */
             if ($parent != null)
                 $parents[$i] = $uniqueParents->get($parent);
         }

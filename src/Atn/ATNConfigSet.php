@@ -35,7 +35,8 @@ class ATNConfigSet implements Hashable
      * All configs but hashed by (s, i, _, pi) not including context. Wiped out
      * when we go readonly as this set becomes a DFA state.
      */
-    public ?Map $configLookup = null;
+    // ConfigHashSet : Dictionary<ATNConfig, ATNConfig>
+    public ?ConfigHashSet $configLookup = null;
 
     /**
      * Track the elements as they are added to the set; supports get(i).
@@ -83,32 +84,7 @@ class ATNConfigSet implements Hashable
          * not including context. Wiped out when we go readonly as this se
          * becomes a DFA state.
          */
-        $this->configLookup = new Map(new class implements Equivalence {
-            public function equivalent(Hashable $left, Hashable $right): bool
-            {
-                if ($left === $right) {
-                    return true;
-                }
-
-                if ($left === null || $right === null) return false;
-                return true;
-            }
-
-            public function hash(Hashable $value): int
-            {
-                if (!($value instanceof ATNConfig)) return 0;
-                return Hasher::hash(
-                    $value->state->stateNumber,
-                    $value->alt,
-                    $value->semanticContext,
-                    );              
-            }
-
-            public function equals(object $other): bool
-            {
-                return $other instanceof self;
-            }
-        });
+        $this->configLookup = new ConfigHashSet();
 
         $this->fullCtx = $fullCtx;
     }
@@ -305,6 +281,8 @@ class ATNConfigSet implements Hashable
         if ($this->configLookup === null) {
             throw new \InvalidArgumentException('This method is not implemented for readonly sets.');
         }
+
+	if (!($item instanceof ATNConfig)) return false;
 
         return $this->configLookup->contains($item);
     }
