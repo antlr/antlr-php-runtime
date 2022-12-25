@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Antlr\Antlr4\Runtime\Atn;
 
 use Antlr\Antlr4\Runtime\Atn\SemanticContexts\SemanticContext;
+use Antlr\Antlr4\Runtime\Atn\States\ATNState;
 use Antlr\Antlr4\Runtime\Comparison\Equality;
 use Antlr\Antlr4\Runtime\Comparison\Hashable;
 use Antlr\Antlr4\Runtime\Comparison\Hasher;
 use Antlr\Antlr4\Runtime\PredictionContexts\PredictionContext;
 use Antlr\Antlr4\Runtime\Utils\BitSet;
 use Antlr\Antlr4\Runtime\Utils\DoubleKeyMap;
-use Antlr\Antlr4\Runtime\Utils\Map;
 use Antlr\Antlr4\Runtime\Utils\Set;
 
 /**
@@ -125,12 +125,14 @@ class ATNConfigSet implements Hashable
         }
 
         // A previous (s,i,pi,_), merge with it and save result
+        /** @var bool $rootIsWildcard */
         $rootIsWildcard = !$this->fullCtx;
 
         if ($existing->context === null || $config->context === null) {
             throw new \LogicException('Unexpected null context.');
         }
 
+        /** @var PredictionContext $merged */
         $merged = PredictionContext::merge($existing->context, $config->context, $rootIsWildcard, $mergeCache);
 
         // No need to check for existing->context, config->context in cache
@@ -162,8 +164,12 @@ class ATNConfigSet implements Hashable
         return $this->configs;
     }
 
+    /**
+     * @return Set<ATNState>
+     */
     public function getStates(): Set
     {
+        /** @var Set<ATNState> $states */
         $states = new Set();
         foreach ($this->configs as $config) {
             $states->add($config->state);
