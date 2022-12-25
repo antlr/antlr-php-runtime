@@ -45,7 +45,7 @@ final class ConfigHashSet extends Map
 
                 public function hash(Hashable $value): int
                 {
-                    if (!($value instanceof ATNConfig)) {
+                    if (! $value instanceof ATNConfig) {
                         return 0;
                     }
 
