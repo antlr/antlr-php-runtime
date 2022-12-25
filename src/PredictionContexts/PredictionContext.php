@@ -492,8 +492,8 @@ abstract class PredictionContext implements Hashable
         // copy over any payloads remaining in either array
         if ($i < \count($a->returnStates)) {
             /** @var int $p */
-            $p = $j;
-            for (; $p < \count($b->returnStates); $p++) {
+            $p = $i;
+            for (; $p < \count($a->returnStates); $p++) {
                 $mergedParents[$k] = $a->parents[$p];
                 $mergedReturnStates[$k] = $a->returnStates[$p];
                 $k++;
