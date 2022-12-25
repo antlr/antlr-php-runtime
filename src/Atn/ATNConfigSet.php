@@ -306,7 +306,7 @@ class ATNConfigSet implements Hashable
 
         $this->configs = [];
         $this->cachedHashCode = -1;
-        $this->configLookup = new Map();
+        $this->configLookup = new ConfigHashSet();
     }
 
     public function isReadOnly(): bool
