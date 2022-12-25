@@ -30,7 +30,7 @@ final class OrderedATNConfigSet extends ATNConfigSet
                     return false;
                 }
 
-                return $left->equals($right);
+                return $left->equivalent($right);
             }
 
             public function hash(Hashable $value): int
