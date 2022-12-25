@@ -15,6 +15,8 @@ use Antlr\Antlr4\Runtime\Utils\Map;
  * {@code (s,i,_,semctx)} to be equal. Unfortunately, this key effectively doubles
  * the number of objects associated with ATNConfigs. The other solution is to
  * use a hash table that lets us specify the equals/hashcode operation.
+ *
+ * @extends Map<ATNConfig, ATNConfig>
  */
 final class ConfigHashSet extends Map
 {
@@ -66,6 +68,7 @@ final class ConfigHashSet extends Map
 
     public function getOrAdd(ATNConfig $config): ATNConfig
     {
+        /** @var ?ATNConfig $existing */
         $existing = null;
         if ($this->tryGetValue($config, $existing)) {
             return $existing;
