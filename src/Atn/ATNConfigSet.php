@@ -311,7 +311,7 @@ class ATNConfigSet implements Hashable
         }
 
         $this->configs = [];
-        $this->cachedHashCode = -1;
+        $this->cachedHashCode = null;
         $this->configLookup = new ConfigHashSet();
     }
 
