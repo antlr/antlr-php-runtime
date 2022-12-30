@@ -63,15 +63,15 @@ final class LexerATNConfig extends ATNConfig
             return false;
         }
 
-        if (!parent::equals($other)) {
-            return false;
-        }
-
         if ($this->passedThroughNonGreedyDecision !== $other->passedThroughNonGreedyDecision) {
             return false;
         }
 
-        return Equality::equals($this->lexerActionExecutor, $other->lexerActionExecutor);
+        if (!Equality::equals($this->lexerActionExecutor, $other->lexerActionExecutor)) {
+            return false;
+        }
+
+        return parent::equals($other);
     }
 
     private static function checkNonGreedyDecision(LexerATNConfig $source, ATNState $target): bool

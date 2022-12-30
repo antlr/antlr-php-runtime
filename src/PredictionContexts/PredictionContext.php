@@ -605,19 +605,16 @@ abstract class PredictionContext implements Hashable
         }
     }
 
-    /**
-     * @param array<PredictionContext|null> $visited
-     */
     public static function getCachedPredictionContext(
         PredictionContext $context,
         PredictionContextCache $contextCache,
-        array &$visited,
+        IdentityHashMap &$visited,
     ): self {
         if ($context->isEmpty()) {
             return $context;
         }
 
-        $existing = $visited[\spl_object_id($context)] ?? null;
+        $existing = $visited->get($context);
 
         if ($existing !== null) {
             return $existing;
@@ -626,7 +623,7 @@ abstract class PredictionContext implements Hashable
         $existing = $contextCache->get($context);
 
         if ($existing !== null) {
-            $visited[\spl_object_id($context)] = $existing;
+            $visited->put($context, $existing);
 
             return $existing;
         }
@@ -660,7 +657,7 @@ abstract class PredictionContext implements Hashable
         if (!$changed) {
             $contextCache->add($context);
 
-            $visited[\spl_object_id($context)] = $context;
+            $visited->put($context, $context);
 
             return $context;
         }
@@ -680,8 +677,8 @@ abstract class PredictionContext implements Hashable
         }
 
         $contextCache->add($updated);
-        $visited[\spl_object_id($updated)] = $updated;
-        $visited[\spl_object_id($context)] = $updated;
+        $visited->put($updated, $updated);
+        $visited->put($context, $updated);
 
         return $updated;
     }

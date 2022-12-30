@@ -128,10 +128,10 @@ class ATNConfig implements Hashable
         }
 
         return $other instanceof self
+            && $this->state->stateNumber === $other->state->stateNumber
             && $this->alt === $other->alt
             && $this->isPrecedenceFilterSuppressed() === $other->isPrecedenceFilterSuppressed()
             && $this->semanticContext->equals($other->semanticContext)
-            && Equality::equals($this->state, $other->state)
             && Equality::equals($this->context, $other->context);
     }
 
