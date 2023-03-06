@@ -636,6 +636,10 @@
         <severity>5</severity>
     </rule>
 
+    <rule ref="SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingNativeTypeHint">
+        <exclude-pattern>src/StdoutMessageLogger.php</exclude-pattern>
+    </rule>
+
     <rule ref="SlevomatCodingStandard.Classes.SuperfluousAbstractClassNaming.SuperfluousPrefix">
         <exclude-pattern>src/Atn/Transitions/AbstractPredicateTransition.php</exclude-pattern>
     </rule>
