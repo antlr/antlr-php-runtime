@@ -86,7 +86,7 @@ final class ArrayPredictionContext extends PredictionContext
             return false;
         }
 
-        if ($this->returnStates === $other->returnStates) {
+        if (!($this->returnStates === $other->returnStates)) {
             return false;
         }
 

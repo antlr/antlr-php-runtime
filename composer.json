@@ -18,7 +18,7 @@
   "require-dev": {
     "ergebnis/composer-normalize": "^2.15",
     "phpstan/extension-installer": "^1.0",
-    "phpstan/phpstan": "^1.4",
+    "phpstan/phpstan": "^1.9",
     "phpstan/phpstan-deprecation-rules": "^1.0",
     "phpstan/phpstan-strict-rules": "^1.1",
     "slevomat/coding-standard": "^7.0",

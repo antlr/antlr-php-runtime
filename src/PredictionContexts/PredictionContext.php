@@ -11,6 +11,7 @@ use Antlr\Antlr4\Runtime\Comparison\Hashable;
 use Antlr\Antlr4\Runtime\LoggerProvider;
 use Antlr\Antlr4\Runtime\RuleContext;
 use Antlr\Antlr4\Runtime\Utils\DoubleKeyMap;
+use Antlr\Antlr4\Runtime\Utils\Map;
 
 abstract class PredictionContext implements Hashable
 {
@@ -293,6 +294,10 @@ abstract class PredictionContext implements Hashable
                 $payloads[0] = $b->returnState;
                 $payloads[1] = $a->returnState;
                 $parents = [$b->parent, $a->parent];
+            } else {
+                $payloads[0] = $a->returnState;
+                $payloads[1] = $b->returnState;
+                $parents = [$a->parent, $b->parent];
             }
 
             $a_ = new ArrayPredictionContext($parents, $payloads);
@@ -421,12 +426,22 @@ abstract class PredictionContext implements Hashable
         }
 
         // merge sorted payloads a + b => M
+        /** @var int $i */
         $i = 0;// walks a
+        /** @var int $j */
         $j = 0;// walks b
+        /** @var int $k */
         $k = 0;// walks target M array
 
+        /** @var array<int> $mergedReturnStates */
         $mergedReturnStates = [];
+        for ($ini = 0; $ini < \count($a->returnStates) + \count($b->returnStates); $ini++) {
+                $mergedReturnStates[$ini] = 0;
+        }
         $mergedParents = [];
+        for ($ini = 0; $ini < \count($a->returnStates) + \count($b->returnStates); $ini++) {
+                $mergedParents[$ini] = null;
+        }
 
         // walk and merge to yield mergedParents, mergedReturnStates
         while ($i < \count($a->returnStates) && $j < \count($b->returnStates)) {
@@ -476,13 +491,17 @@ abstract class PredictionContext implements Hashable
 
         // copy over any payloads remaining in either array
         if ($i < \count($a->returnStates)) {
-            for ($p = $i, $count = \count($a->returnStates); $p < $count; $p++) {
+            /** @var int $p */
+            $p = $i;
+            for (; $p < \count($a->returnStates); $p++) {
                 $mergedParents[$k] = $a->parents[$p];
                 $mergedReturnStates[$k] = $a->returnStates[$p];
                 $k++;
             }
         } else {
-            for ($p = $j, $count = \count($b->returnStates); $p < $count; $p++) {
+            /** @var int $p */
+            $p = $j;
+            for (; $p < \count($b->returnStates); $p++) {
                 $mergedParents[$k] = $b->parents[$p];
                 $mergedReturnStates[$k] = $b->returnStates[$p];
                 $k++;
@@ -503,17 +522,17 @@ abstract class PredictionContext implements Hashable
                 return $a_;
             }
 
+            // mergedParents = Arrays.CopyOf(mergedParents, k);
             $mergedParents = \array_slice($mergedParents, 0, $k);
+            // mergedReturnStates = Arrays.CopyOf(mergedReturnStates, k);
             $mergedReturnStates = \array_slice($mergedReturnStates, 0, $k);
         }
-
-        self::combineCommonParents($mergedParents);
 
         $M = new ArrayPredictionContext($mergedParents, $mergedReturnStates);
 
         // if we created same array as a or b, return that instead
         // TODO: track whether this is possible above during merge sort for speed
-        if ($M === $a) {
+        if ($M->equals($a)) {
             if ($mergeCache !== null) {
                 $mergeCache->set($a, $b, $a);
             }
@@ -529,7 +548,7 @@ abstract class PredictionContext implements Hashable
             return $a;
         }
 
-        if ($M === $b) {
+        if ($M->equals($b)) {
             if ($mergeCache !== null) {
                 $mergeCache->set($a, $b, $b);
             }
@@ -545,53 +564,57 @@ abstract class PredictionContext implements Hashable
             return $b;
         }
 
-        if ($mergeCache !== null) {
-            $mergeCache->set($a, $b, $M);
-        }
+        self::combineCommonParents($mergedParents);
 
         if (ParserATNSimulator::$traceAtnSimulation) {
             LoggerProvider::getLogger()
-                ->debug('mergeArrays a={a},b={b} -> M', [
+                ->debug('mergeArrays a={a},b={b} -> {M}', [
                     'a' => $a->__toString(),
                     'b' => $b->__toString(),
                     'M' => $M->__toString(),
                 ]);
         }
 
+        if ($mergeCache !== null) {
+            $mergeCache->set($a, $b, $M);
+        }
+
         return $M;
     }
 
     /**
-     * @param array<PredictionContext> $parents
+     * @param array<PredictionContext|null> $parents
      */
     protected static function combineCommonParents(array &$parents): void
     {
-        $uniqueParents = new \SplObjectStorage();
+        /** @var Map<PredictionContext, PredictionContext> $uniqueParents */
+        $uniqueParents = new Map();
 
+        /** @var PredictionContext|null $parent */
         foreach ($parents as $parent) {
-            if (!$uniqueParents->contains($parent)) {
-                $uniqueParents[$parent] = $parent;
+            if ($parent !== null && !$uniqueParents->contains($parent)) {
+                // don't replace.
+                $uniqueParents->put($parent, $parent);
             }
         }
 
         foreach ($parents as $i => $parent) {
-            $parents[$i] = $uniqueParents[$parent];
+            if ($parent !== null) {
+                $parents[$i] = $uniqueParents->get($parent);
+            }
         }
     }
 
-    /**
-     * @param array<PredictionContext|null> $visited
-     */
     public static function getCachedPredictionContext(
         PredictionContext $context,
         PredictionContextCache $contextCache,
-        array &$visited,
+        IdentityHashMap &$visited,
     ): self {
         if ($context->isEmpty()) {
             return $context;
         }
 
-        $existing = $visited[\spl_object_id($context)] ?? null;
+        $existing = $visited->get($context);
 
         if ($existing !== null) {
             return $existing;
@@ -600,7 +623,7 @@ abstract class PredictionContext implements Hashable
         $existing = $contextCache->get($context);
 
         if ($existing !== null) {
-            $visited[\spl_object_id($context)] = $existing;
+            $visited->put($context, $existing);
 
             return $existing;
         }
@@ -634,7 +657,7 @@ abstract class PredictionContext implements Hashable
         if (!$changed) {
             $contextCache->add($context);
 
-            $visited[\spl_object_id($context)] = $context;
+            $visited->put($context, $context);
 
             return $context;
         }
@@ -654,8 +677,8 @@ abstract class PredictionContext implements Hashable
         }
 
         $contextCache->add($updated);
-        $visited[\spl_object_id($updated)] = $updated;
-        $visited[\spl_object_id($context)] = $updated;
+        $visited->put($updated, $updated);
+        $visited->put($context, $updated);
 
         return $updated;
     }

@@ -152,7 +152,7 @@ abstract class ATNState implements Hashable
 
     public function hashCode(): int
     {
-        return $this->getStateType();
+        return $this->stateNumber;
     }
 
     abstract public function getStateType(): int;

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Antlr\Antlr4\Runtime\Atn;
 
 use Antlr\Antlr4\Runtime\Atn\SemanticContexts\SemanticContext;
+use Antlr\Antlr4\Runtime\Atn\States\ATNState;
 use Antlr\Antlr4\Runtime\Comparison\Equality;
-use Antlr\Antlr4\Runtime\Comparison\Equivalence;
 use Antlr\Antlr4\Runtime\Comparison\Hashable;
 use Antlr\Antlr4\Runtime\Comparison\Hasher;
 use Antlr\Antlr4\Runtime\PredictionContexts\PredictionContext;
@@ -34,7 +34,8 @@ class ATNConfigSet implements Hashable
      * All configs but hashed by (s, i, _, pi) not including context. Wiped out
      * when we go readonly as this set becomes a DFA state.
      */
-    public ?Set $configLookup = null;
+    // ConfigHashSet : Dictionary<ATNConfig, ATNConfig>
+    public ?ConfigHashSet $configLookup = null;
 
     /**
      * Track the elements as they are added to the set; supports get(i).
@@ -82,32 +83,7 @@ class ATNConfigSet implements Hashable
          * not including context. Wiped out when we go readonly as this se
          * becomes a DFA state.
          */
-        $this->configLookup = new Set(new class implements Equivalence {
-            public function equivalent(Hashable $left, Hashable $right): bool
-            {
-                if ($left === $right) {
-                    return true;
-                }
-
-                if (!$left instanceof ATNConfig || !$right instanceof ATNConfig) {
-                    return false;
-                }
-
-                return $left->alt === $right->alt
-                    && $left->semanticContext->equals($right->semanticContext)
-                    && Equality::equals($left->state, $right->state);
-            }
-
-            public function hash(Hashable $value): int
-            {
-                return $value->hashCode();
-            }
-
-            public function equals(object $other): bool
-            {
-                return $other instanceof self;
-            }
-        });
+        $this->configLookup = new ConfigHashSet();
 
         $this->fullCtx = $fullCtx;
     }
@@ -133,14 +109,14 @@ class ATNConfigSet implements Hashable
             $this->hasSemanticContext = true;
         }
 
-        if ($config->reachesIntoOuterContext > 0) {
+        if ($config->getOuterContextDepth() > 0) {
             $this->dipsIntoOuterContext = true;
         }
 
         /** @var ATNConfig $existing */
         $existing = $this->configLookup->getOrAdd($config);
 
-        if ($existing->equals($config)) {
+        if ($existing === $config) {
             $this->cachedHashCode = null;
 
             $this->configs[] = $config; // track order here
@@ -149,12 +125,14 @@ class ATNConfigSet implements Hashable
         }
 
         // A previous (s,i,pi,_), merge with it and save result
+        /** @var bool $rootIsWildcard */
         $rootIsWildcard = !$this->fullCtx;
 
         if ($existing->context === null || $config->context === null) {
             throw new \LogicException('Unexpected null context.');
         }
 
+        /** @var PredictionContext $merged */
         $merged = PredictionContext::merge($existing->context, $config->context, $rootIsWildcard, $mergeCache);
 
         // No need to check for existing->context, config->context in cache
@@ -186,8 +164,12 @@ class ATNConfigSet implements Hashable
         return $this->configs;
     }
 
+    /**
+     * @return Set<ATNState>
+     */
     public function getStates(): Set
     {
+        /** @var Set<ATNState> $states */
         $states = new Set();
         foreach ($this->configs as $config) {
             $states->add($config->state);
@@ -305,6 +287,10 @@ class ATNConfigSet implements Hashable
             throw new \InvalidArgumentException('This method is not implemented for readonly sets.');
         }
 
+        if (!($item instanceof ATNConfig)) {
+            return false;
+        }
+
         return $this->configLookup->contains($item);
     }
 
@@ -325,8 +311,8 @@ class ATNConfigSet implements Hashable
         }
 
         $this->configs = [];
-        $this->cachedHashCode = -1;
-        $this->configLookup = new Set();
+        $this->cachedHashCode = null;
+        $this->configLookup = new ConfigHashSet();
     }
 
     public function isReadOnly(): bool
@@ -358,7 +344,7 @@ class ATNConfigSet implements Hashable
         return \sprintf(
             '[%s]%s%s%s%s',
             \implode(', ', $this->configs),
-            $this->hasSemanticContext ? ',hasSemanticContext=' . $this->hasSemanticContext : '',
+            $this->hasSemanticContext ? ',hasSemanticContext=true' : '',
             $this->uniqueAlt !== ATN::INVALID_ALT_NUMBER ? ',uniqueAlt=' . $this->uniqueAlt : '',
             $this->conflictingAlts !== null ? ',conflictingAlts=' . $this->conflictingAlts : '',
             $this->dipsIntoOuterContext ? ',dipsIntoOuterContext' : '',

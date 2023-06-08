@@ -13,7 +13,7 @@ use Antlr\Antlr4\Runtime\Comparison\Hashable;
  * @template K of Hashable
  * @template V
  */
-final class Map implements Equatable, \Countable, \IteratorAggregate
+class Map implements Equatable, \Countable, \IteratorAggregate
 {
     /** @var array<int, array<array{K, V}>> */
     private array $table = [];
@@ -26,6 +26,11 @@ final class Map implements Equatable, \Countable, \IteratorAggregate
     public function __construct(?Equivalence $equivalence = null)
     {
         $this->equivalence = $equivalence ?? new DefaultEquivalence();
+    }
+
+    public function isEmpty(): bool
+    {
+        return $this->count() === 0;
     }
 
     public function count(): int
@@ -132,34 +137,7 @@ final class Map implements Equatable, \Countable, \IteratorAggregate
 
     public function equals(object $other): bool
     {
-        if ($this === $other) {
-            return true;
-        }
-
-        if (!$other instanceof self
-            || $this->size !== $other->size
-            || !$this->equivalence->equals($other->equivalence)) {
-            return false;
-        }
-
-        foreach ($this->table as $hash => $bucket) {
-            if (!isset($other->table[$hash]) || \count($bucket) !== \count($other->table[$hash])) {
-                return false;
-            }
-
-            $otherBucket = $other->table[$hash];
-
-            foreach ($bucket as $index => [$key, $value]) {
-                [$otherKey, $otherValue] = $otherBucket[$index];
-
-                if (!$this->equivalence->equivalent($key, $otherKey)
-                    || !self::isEqual($value, $otherValue)) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
+        return false;
     }
 
     /**
@@ -211,5 +189,28 @@ final class Map implements Equatable, \Countable, \IteratorAggregate
         }
 
         return $left === $right;
+    }
+
+    /**
+     * @param K $key
+     * @param V $value
+     */
+    public function tryGetValue(Hashable $key, mixed &$value): bool
+    {
+        $hash = $this->equivalence->hash($key);
+
+        if (!isset($this->table[$hash])) {
+            $this->table[$hash] = [];
+        }
+
+        foreach ($this->table[$hash] as $index => [$entryKey, $entryValue]) {
+            if ($this->equivalence->equivalent($key, $entryKey)) {
+                $value = $entryValue;
+
+                return true;
+            }
+        }
+
+        return false;
     }
 }

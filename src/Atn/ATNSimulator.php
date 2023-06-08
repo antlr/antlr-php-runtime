@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Antlr\Antlr4\Runtime\Atn;
 
 use Antlr\Antlr4\Runtime\Dfa\DFAState;
+use Antlr\Antlr4\Runtime\PredictionContexts\IdentityHashMap;
 use Antlr\Antlr4\Runtime\PredictionContexts\PredictionContext;
 use Antlr\Antlr4\Runtime\PredictionContexts\PredictionContextCache;
 
@@ -92,7 +93,7 @@ abstract class ATNSimulator
 
     public function getCachedContext(PredictionContext $context): PredictionContext
     {
-        $visited = [];
+        $visited = new IdentityHashMap();
 
         return PredictionContext::getCachedPredictionContext(
             $context,
