@@ -82,32 +82,7 @@ class ATNConfigSet implements Hashable
          * not including context. Wiped out when we go readonly as this se
          * becomes a DFA state.
          */
-        $this->configLookup = new Set(new class implements Equivalence {
-            public function equivalent(Hashable $left, Hashable $right): bool
-            {
-                if ($left === $right) {
-                    return true;
-                }
-
-                if (!$left instanceof ATNConfig || !$right instanceof ATNConfig) {
-                    return false;
-                }
-
-                return $left->alt === $right->alt
-                    && $left->semanticContext->equals($right->semanticContext)
-                    && Equality::equals($left->state, $right->state);
-            }
-
-            public function hash(Hashable $value): int
-            {
-                return $value->hashCode();
-            }
-
-            public function equals(object $other): bool
-            {
-                return $other instanceof self;
-            }
-        });
+        $this->configLookup = new Set(new ATNEquivalence());
 
         $this->fullCtx = $fullCtx;
     }
