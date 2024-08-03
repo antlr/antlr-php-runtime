@@ -51,7 +51,7 @@ final class RuntimeMetaData
      * - suffix is an optional string. When `suffix` is omitted, the `-`
      * (hyphen-minus) appearing before it is also omitted.
      */
-    public const VERSION = '4.13.0';
+    public const VERSION = '4.13.2';
 
     /**
      * Gets the currently executing version of the ANTLR 4 runtime library.
