@@ -2,39 +2,39 @@
 
 declare(strict_types=1);
 
-namespace Antlr\Antlr4\Runtime\Atn;
+namespace Antlr\Antlr4\Runtime\PredictionContexts;
 
 use Antlr\Antlr4\Runtime\Comparison\Equivalence;
 use Antlr\Antlr4\Runtime\Comparison\Hashable;
+use Antlr\Antlr4\Runtime\Utils\Map;
 
-final class OrderedATNConfigSet extends ATNConfigSet
+/**
+ * @extends Map<PredictionContext,PredictionContext>
+ */
+class IdentityHashMap extends Map
 {
     public function __construct()
     {
-        parent::__construct();
-
-        $this->configLookup = new ConfigHashSet(new class implements Equivalence {
+        parent::__construct(new class implements Equivalence {
             public function equivalent(Hashable $left, Hashable $right): bool
             {
-                if ($left === $right) {
-                    return true;
-                }
-
-                /** @phpstan-ignore-next-line */
-                if ($left === null) {
+                if (! $left instanceof PredictionContext) {
                     return false;
                 }
 
-                /** @phpstan-ignore-next-line */
-                if ($right === null) {
+                if (! $right instanceof PredictionContext) {
                     return false;
                 }
 
-                return $left->equals($right);
+                return $left === $right;
             }
 
             public function hash(Hashable $value): int
             {
+                if (! $value instanceof PredictionContext) {
+                    return 0;
+                }
+
                 return $value->hashCode();
             }
 
