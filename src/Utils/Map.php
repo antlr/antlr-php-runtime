@@ -12,6 +12,8 @@ use Antlr\Antlr4\Runtime\Comparison\Hashable;
 /**
  * @template K of Hashable
  * @template V
+ *
+ * @implements \IteratorAggregate<K, V>
  */
 final class Map implements Equatable, \Countable, \IteratorAggregate
 {

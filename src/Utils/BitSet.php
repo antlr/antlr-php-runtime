@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Antlr\Antlr4\Runtime\Utils;
 
-use Antlr\Antlr4\Runtime\Comparison\Hasher;
+use Antlr\Antlr4\Runtime\Comparison\MurmurHash;
 
 final class BitSet
 {
@@ -32,27 +32,40 @@ final class BitSet
     }
 
     /**
+     * The set bits, in ascending order.
+     *
+     * A `BitSet` is ordered by bit position by definition, but the backing array
+     * is keyed by bit index and so iterates in *insertion* order. Returning that
+     * raw order made `{2, 1}` and `{1, 2}` distinguishable — visible to users,
+     * because `DiagnosticErrorListener` formats an alternative set straight into
+     * the `ambigAlts=` of a parser message.
+     *
      * @return array<int>
      */
     public function values(): array
     {
-        return \array_keys($this->data);
+        $values = \array_keys($this->data);
+
+        \sort($values);
+
+        return $values;
     }
 
     public function minValue(): int
     {
-        $values = $this->values();
-
-        if (\count($values) === 0) {
+        if ($this->data === []) {
             throw new \LogicException('BitSet is empty');
         }
 
-        return \min($values);
+        // `nextSetBit(0)`: the lowest set bit, independent of insertion order.
+        return \min(\array_keys($this->data));
     }
 
     public function hashCode(): int
     {
-        return Hasher::hash(...$this->values());
+        // Hashed over the ordered bits so that equal sets hash alike — the same
+        // hash/equals contract that `equals()` below now honours.
+        return MurmurHash::hash($this->values());
     }
 
     public function equals(object $other): bool
@@ -61,10 +74,22 @@ final class BitSet
             return true;
         }
 
-        return $other instanceof self
-            && $this->data === $other->data;
+        if (!$other instanceof self) {
+            return false;
+        }
+
+        // `===` on the backing arrays compares key *order* as well as content, so
+        // two identical alternative sets built in different orders compared
+        // unequal. Java's `BitSet.equals` is positional and order-free.
+        return $this->values() === $other->values();
     }
 
+    /**
+     * The number of set bits — Java's `cardinality()`.
+     *
+     * Note this is not Java's `BitSet.length()`, which is the highest set bit
+     * plus one. Every call site here means cardinality.
+     */
     public function length(): int
     {
         return \count($this->data);

@@ -499,7 +499,7 @@ abstract class Parser extends Recognizer
             $this->tokenStream()->consume();
         }
 
-        if ($this->buildParseTree || \count($this->parseListeners) > 0) {
+        if ($this->buildParseTree || $this->parseListeners !== []) {
             if ($this->errorHandler->inErrorRecoveryMode($this)) {
                 $node = $this->context()->addErrorNode($this->createErrorNode($this->context(), $o));
 
@@ -564,30 +564,35 @@ abstract class Parser extends Recognizer
     {
         $this->setState($state);
         $this->ctx = $localctx;
-        $this->context()->start = $this->tokenStream()->LT(1);
+        $localctx->start = $this->tokenStream()->LT(1);
 
         if ($this->buildParseTree) {
             $this->addContextToParseTree();
         }
 
-        $this->triggerEnterRuleEvent();
+        // Skipped rather than called into when there are no listeners: this runs
+        // once per rule invocation.
+        if ($this->parseListeners !== []) {
+            $this->triggerEnterRuleEvent();
+        }
     }
 
     public function exitRule(): void
     {
-        if ($this->matchedEOF) {
-            // if we have matched EOF, it cannot consume past EOF so we use LT(1) here
-            $this->context()->stop = $this->tokenStream()->LT(1); // LT(1) will be end of file
-        } else {
-            $this->context()->stop = $this->tokenStream()->LT(-1); // stop node is what we just matched
-        }
+        // Resolved once: this runs on every rule exit and each accessor is a call.
+        $context = $this->context();
+
+        // if we have matched EOF, it cannot consume past EOF so we use LT(1) here
+        $context->stop = $this->tokenStream()->LT($this->matchedEOF ? 1 : -1);
 
         // trigger event on _ctx, before it reverts to parent
-        $this->triggerExitRuleEvent();
+        if ($this->parseListeners !== []) {
+            $this->triggerExitRuleEvent();
+        }
 
-        $this->setState($this->context()->invokingState);
+        $this->setState($context->invokingState);
 
-        $parent = $this->context()->getParent();
+        $parent = $context->getParent();
 
         if ($parent === null || $parent instanceof ParserRuleContext) {
             $this->ctx = $parent;
@@ -905,14 +910,29 @@ abstract class Parser extends Recognizer
      */
     public function setTrace(bool $trace): void
     {
-        if ($this->tracer !== null) {
-            $this->removeParseListener($this->tracer);
+        if (!$trace) {
+            if ($this->tracer !== null) {
+                $this->removeParseListener($this->tracer);
+
+                // Discarded, not just detached: `isTrace()` reports on this
+                // reference, so keeping it would leave tracing switched off yet
+                // reported as on.
+                $this->tracer = null;
+            }
+
+            return;
         }
 
-        if ($trace) {
-            $this->tracer = new ParserTraceListener($this);
-            $this->addParseListener($this->tracer);
+        $tracer = $this->tracer;
+
+        if ($tracer === null) {
+            $tracer = new ParserTraceListener($this);
+            $this->tracer = $tracer;
+        } else {
+            $this->removeParseListener($tracer);
         }
+
+        $this->addParseListener($tracer);
     }
 
     /**

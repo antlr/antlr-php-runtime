@@ -11,6 +11,7 @@ use Antlr\Antlr4\Runtime\Comparison\Hashable;
 use Antlr\Antlr4\Runtime\LoggerProvider;
 use Antlr\Antlr4\Runtime\RuleContext;
 use Antlr\Antlr4\Runtime\Utils\DoubleKeyMap;
+use Antlr\Antlr4\Runtime\Utils\Map;
 
 abstract class PredictionContext implements Hashable
 {
@@ -25,6 +26,12 @@ abstract class PredictionContext implements Hashable
      * Here, `$` = {@see PredictionContext::EMPTY_RETURN_STATE}.
      */
     public const EMPTY_RETURN_STATE = 0x7FFFFFFF;
+
+    /**
+     * The seed every prediction-context hash starts from, matching
+     * `PredictionContext.INITIAL_HASH` in the reference runtime.
+     */
+    public const INITIAL_HASH = 1;
 
     /**
      * Stores the computed hash code of this {@see PredictionContext}. The hash
@@ -53,17 +60,17 @@ abstract class PredictionContext implements Hashable
         $this->id = self::$globalNodeCount++;
     }
 
+    private static ?EmptyPredictionContext $empty = null;
+
     public static function empty(): EmptyPredictionContext
     {
-        static $empty;
-
-        if ($empty === null) {
+        if (self::$empty === null) {
             self::$globalNodeCount--;
-            $empty = new EmptyPredictionContext();
-            $empty->id = 0;
+            self::$empty = new EmptyPredictionContext();
+            self::$empty->id = 0;
         }
 
-        return $empty;
+        return self::$empty;
     }
 
     /**
@@ -255,7 +262,10 @@ abstract class PredictionContext implements Hashable
             // see if we can collapse parents due to $+x parents if local ctx
             $singleParent = null;
 
-            if ($a === $b || ($a->parent !== null && $a->parent === $b->parent)) {
+            // Java collapses on `a.parent.equals(b.parent)`; comparing by identity
+            // missed every equal-but-distinct parent, so `ax + bx = [a,b]x` never
+            // fired and the context graph grew where Java's stayed flat.
+            if ($a === $b || ($a->parent !== null && $b->parent !== null && $a->parent->equals($b->parent))) {
                 // ax +
                 // bx =
                 // [a,b]x
@@ -511,9 +521,12 @@ abstract class PredictionContext implements Hashable
 
         $M = new ArrayPredictionContext($mergedParents, $mergedReturnStates);
 
-        // if we created same array as a or b, return that instead
+        // If we created the same array as a or b, return that instead.
+        // Java compares with `equals()`; identity can never hold here because `M`
+        // was just constructed, so the fast path never fired and every merge
+        // allocated a fresh context.
         // TODO: track whether this is possible above during merge sort for speed
-        if ($M === $a) {
+        if ($M->equals($a)) {
             if ($mergeCache !== null) {
                 $mergeCache->set($a, $b, $a);
             }
@@ -529,7 +542,7 @@ abstract class PredictionContext implements Hashable
             return $a;
         }
 
-        if ($M === $b) {
+        if ($M->equals($b)) {
             if ($mergeCache !== null) {
                 $mergeCache->set($a, $b, $b);
             }
@@ -551,7 +564,9 @@ abstract class PredictionContext implements Hashable
 
         if (ParserATNSimulator::$traceAtnSimulation) {
             LoggerProvider::getLogger()
-                ->debug('mergeArrays a={a},b={b} -> M', [
+                // `{M}` — the placeholder was missing its braces, so the trace
+                // printed a literal "M" instead of the merged context.
+                ->debug('mergeArrays a={a},b={b} -> {M}', [
                     'a' => $a->__toString(),
                     'b' => $b->__toString(),
                     'M' => $M->__toString(),
@@ -562,36 +577,52 @@ abstract class PredictionContext implements Hashable
     }
 
     /**
-     * @param array<PredictionContext> $parents
+     * Makes a pass over all `M` parents and merges any that are `equals()`.
+     *
+     * @param array<PredictionContext|null> $parents
      */
     protected static function combineCommonParents(array &$parents): void
     {
-        $uniqueParents = new \SplObjectStorage();
+        // `SplObjectStorage` keys on object *identity*, so the previous version
+        // could only ever collapse a parent onto itself — the canonicalisation
+        // never happened and equal-but-distinct parents accumulated. Java uses a
+        // `HashMap`, whose whole purpose here is `equals()`-based lookup.
+        /** @var Map<PredictionContext, PredictionContext> $uniqueParents */
+        $uniqueParents = new Map();
 
         foreach ($parents as $parent) {
-            if (!$uniqueParents->contains($parent)) {
-                $uniqueParents[$parent] = $parent;
+            // Java's `HashMap` tolerates a null key; a null parent simply has
+            // nothing to canonicalise against.
+            if ($parent !== null && !$uniqueParents->contains($parent)) {
+                $uniqueParents->put($parent, $parent); // don't replace
             }
         }
 
         foreach ($parents as $i => $parent) {
-            $parents[$i] = $uniqueParents[$parent];
+            if ($parent !== null) {
+                $parents[$i] = $uniqueParents->get($parent);
+            }
         }
     }
 
     /**
-     * @param array<PredictionContext|null> $visited
+     * @param \SplObjectStorage<PredictionContext, PredictionContext> $visited
+     *        an identity map, mirroring Java's `IdentityHashMap`
      */
     public static function getCachedPredictionContext(
         PredictionContext $context,
         PredictionContextCache $contextCache,
-        array &$visited,
+        \SplObjectStorage $visited,
     ): self {
         if ($context->isEmpty()) {
             return $context;
         }
 
-        $existing = $visited[\spl_object_id($context)] ?? null;
+        // Identity, deliberately: this map memoises "which object did I already
+        // rewrite?" during one traversal. Keying it on `spl_object_id()` in a
+        // plain array — as this used to — is unsafe, because ids are reused once
+        // an object is collected, so an id could alias two different contexts.
+        $existing = $visited[$context] ?? null;
 
         if ($existing !== null) {
             return $existing;
@@ -600,7 +631,7 @@ abstract class PredictionContext implements Hashable
         $existing = $contextCache->get($context);
 
         if ($existing !== null) {
-            $visited[\spl_object_id($context)] = $existing;
+            $visited[$context] = $existing;
 
             return $existing;
         }
@@ -616,7 +647,11 @@ abstract class PredictionContext implements Hashable
 
             $parent = self::getCachedPredictionContext($parentContext, $contextCache, $visited);
 
-            if ($changed || !$parent->equals($parentContext)) {
+            // Identity, as Java has it: the cache exists to canonicalise
+            // instances, so "did this parent get replaced?" is an identity
+            // question. `equals()` would report no change for an equal-but-
+            // distinct instance and leave the un-canonicalised one in place.
+            if ($changed || $parent !== $parentContext) {
                 if (!$changed) {
                     $parents = [];
 
@@ -634,7 +669,7 @@ abstract class PredictionContext implements Hashable
         if (!$changed) {
             $contextCache->add($context);
 
-            $visited[\spl_object_id($context)] = $context;
+            $visited[$context] = $context;
 
             return $context;
         }
@@ -654,8 +689,8 @@ abstract class PredictionContext implements Hashable
         }
 
         $contextCache->add($updated);
-        $visited[\spl_object_id($updated)] = $updated;
-        $visited[\spl_object_id($context)] = $updated;
+        $visited[$updated] = $updated;
+        $visited[$context] = $updated;
 
         return $updated;
     }

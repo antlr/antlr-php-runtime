@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Antlr\Antlr4\Runtime\Atn\Actions;
 
-use Antlr\Antlr4\Runtime\Comparison\Hasher;
+use Antlr\Antlr4\Runtime\Comparison\MurmurHash;
 use Antlr\Antlr4\Runtime\Lexer;
 
 /**
@@ -20,11 +20,11 @@ final class LexerSkipAction implements LexerAction
     /**
      * Provides a singleton instance of this parameterless lexer action.
      */
+    private static ?self $instance = null;
+
     public static function instance(): self
     {
-        static $instance;
-
-        return $instance ??= new self();
+        return self::$instance ??= new self();
     }
 
     /**
@@ -59,7 +59,7 @@ final class LexerSkipAction implements LexerAction
 
     public function hashCode(): int
     {
-        return Hasher::hash($this->getActionType());
+        return MurmurHash::hash([$this->getActionType()]);
     }
 
     public function equals(object $other): bool

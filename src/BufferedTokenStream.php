@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Antlr\Antlr4\Runtime;
 
-use Antlr\Antlr4\Runtime\Utils\Set;
-
 /**
  * This implementation of {@see TokenStream} loads tokens from a
  * {@see TokenSource} on-demand, and places the tokens in a buffer to provide
@@ -286,9 +284,11 @@ class BufferedTokenStream implements TokenStream
     /**
      * Get all tokens from start..stop inclusively
      *
+     * @param array<int>|null $types token types to keep, or null for all
+     *
      * @return array<Token>|null
      */
-    public function getTokens(int $start, int $stop, ?Set $types = null): ?array
+    public function getTokens(int $start, int $stop, ?array $types = null): ?array
     {
         if ($start < 0 || $stop < 0) {
             return null;
@@ -308,7 +308,7 @@ class BufferedTokenStream implements TokenStream
                 break;
             }
 
-            if ($types === null || $types->contains($t->getType())) {
+            if ($types === null || \in_array($t->getType(), $types, true)) {
                 $subset[] = $t;
             }
         }

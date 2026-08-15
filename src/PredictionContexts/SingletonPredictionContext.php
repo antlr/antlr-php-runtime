@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Antlr\Antlr4\Runtime\PredictionContexts;
 
-use Antlr\Antlr4\Runtime\Comparison\Equality;
-use Antlr\Antlr4\Runtime\Comparison\Hasher;
+use Antlr\Antlr4\Runtime\Comparison\MurmurHash;
 
 /**
  * Used to cache {@see PredictionContext} objects. Its used for
@@ -65,15 +64,34 @@ class SingletonPredictionContext extends PredictionContext
             return true;
         }
 
-        if (!$other instanceof static) {
+        // `self`, not `static`: Java checks `instanceof SingletonPredictionContext`,
+        // so a singleton and an `EmptyPredictionContext` remain comparable in both
+        // directions. With `static` the comparison was asymmetric.
+        if (!$other instanceof self) {
             return false;
         }
 
+        // Java is `returnState == s.returnState && (parent != null && parent.equals(s.parent))`,
+        // guarded by a hash comparison. Two null-parent singletons are
+        // deliberately *not* equal there, and `parent.equals(null)` is false —
+        // hence both null checks.
+        //
+        // The return state is compared before the hash guard: both are
+        // necessary conditions so the outcome is identical, but in PHP the hash
+        // is two method calls where the return state is an int comparison.
         if ($this->returnState !== $other->returnState) {
             return false;
         }
 
-        return Equality::equals($this->parent, $other->parent);
+        if ($this->parent === null || $other->parent === null) {
+            return false;
+        }
+
+        if (($this->cachedHashCode ?? $this->hashCode()) !== ($other->cachedHashCode ?? $other->hashCode())) {
+            return false;
+        }
+
+        return $this->parent->equals($other->parent);
     }
 
     public function __toString(): string
@@ -93,10 +111,9 @@ class SingletonPredictionContext extends PredictionContext
 
     protected function computeHashCode(): int
     {
-        if ($this->parent === null) {
-            return Hasher::hash(0);
-        }
-
-        return Hasher::hash($this->parent, $this->returnState);
+        // `PredictionContext.calculateEmptyHashCode()` / `calculateHashCode()`.
+        return $this->parent === null
+            ? MurmurHash::hash([], PredictionContext::INITIAL_HASH)
+            : MurmurHash::hash([$this->parent, $this->returnState], PredictionContext::INITIAL_HASH);
     }
 }

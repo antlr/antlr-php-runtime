@@ -62,11 +62,11 @@ abstract class ATNSimulator
         $this->sharedContextCache = $sharedContextCache;
     }
 
+    private static ?DFAState $error = null;
+
     public static function error(): DFAState
     {
-        static $error;
-
-        return $error ?? ($error = new DFAState(new ATNConfigSet(), 0x7FFFFFFF));
+        return self::$error ??= new DFAState(new ATNConfigSet(), 0x7FFFFFFF);
     }
 
     abstract public function reset(): void;
@@ -92,7 +92,8 @@ abstract class ATNSimulator
 
     public function getCachedContext(PredictionContext $context): PredictionContext
     {
-        $visited = [];
+        /** @var \SplObjectStorage<PredictionContext, PredictionContext> $visited */
+        $visited = new \SplObjectStorage();
 
         return PredictionContext::getCachedPredictionContext(
             $context,

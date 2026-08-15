@@ -8,11 +8,11 @@ use Antlr\Antlr4\Runtime\ParserRuleContext;
 
 class ParseTreeWalker
 {
+    private static ?self $default = null;
+
     public static function default(): self
     {
-        static $instance;
-
-        return $instance ?? ($instance = new self());
+        return self::$default ??= new self();
     }
 
     public function walk(ParseTreeListener $listener, ParseTree $tree): void

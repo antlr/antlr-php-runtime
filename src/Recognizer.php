@@ -17,8 +17,15 @@ abstract class Recognizer
     /** @var array<string> */
     public array $log = [];
 
-    /** @var array<string, array<string, int>> */
-    private static array $tokenTypeMapCache = [];
+    /**
+     * Java keys this on the vocabulary itself in a `WeakHashMap`, so a cached
+     * map dies with the vocabulary it describes. `WeakMap` is the exact
+     * equivalent: keying on identity like `SplObjectStorage`, but without
+     * pinning every vocabulary the process has ever seen in memory.
+     *
+     * @var \WeakMap<Vocabulary, array<string, int>>|null
+     */
+    private static ?\WeakMap $tokenTypeMapCache = null;
 
     /** @var array<ANTLRErrorListener> */
     private array $listeners;
@@ -51,8 +58,8 @@ abstract class Recognizer
     {
         $vocabulary = $this->getVocabulary();
 
-        $key = \spl_object_hash($vocabulary);
-        $result = self::$tokenTypeMapCache[$key] ?? null;
+        self::$tokenTypeMapCache ??= new \WeakMap();
+        $result = self::$tokenTypeMapCache[$vocabulary] ?? null;
 
         if ($result === null) {
             $result = [];
@@ -73,7 +80,7 @@ abstract class Recognizer
 
             $result['EOF'] = Token::EOF;
 
-            self::$tokenTypeMapCache[$key] = $result;
+            self::$tokenTypeMapCache[$vocabulary] = $result;
         }
 
         return $result;

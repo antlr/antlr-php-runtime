@@ -247,7 +247,11 @@ abstract class Lexer extends Recognizer implements TokenSource
 
     public function getSourceName(): string
     {
-        return $this->input === null ? '' : $this->input->getSourceName();
+        // With no input Java would NPE; reporting the documented unknown-source
+        // sentinel is the closest honest answer.
+        return $this->input === null
+            ? IntStream::UNKNOWN_SOURCE_NAME
+            : $this->input->getSourceName();
     }
 
     public function getInputStream(): ?IntStream

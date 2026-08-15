@@ -39,7 +39,10 @@ final class Equality
         }
 
         foreach ($left as $key => $value) {
-            if (!isset($right[$key])) {
+            // `array_key_exists`, not `isset`: a legitimately `null` element —
+            // prediction-context parent arrays are full of them — would otherwise
+            // read as a missing key and make two identical arrays compare unequal.
+            if (!\array_key_exists($key, $right)) {
                 return false;
             }
 

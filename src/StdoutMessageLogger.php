@@ -19,7 +19,7 @@ final class StdoutMessageLogger extends AbstractLogger implements Logger
     }
 
     /**
-     * @param array<string, mixed> $context
+     * @param array<mixed> $context
      */
     private static function formatMessage(\Stringable|string $message, array $context): string
     {

@@ -12,16 +12,16 @@ final class ATNDeserializationOptions
 
     private bool $generateRuleBypassTransitions;
 
+    private static ?self $defaultOptions = null;
+
     public static function defaultOptions(): ATNDeserializationOptions
     {
-        static $defaultOptions;
-
-        if ($defaultOptions === null) {
-            $defaultOptions = new ATNDeserializationOptions();
-            $defaultOptions->readOnly = true;
+        if (self::$defaultOptions === null) {
+            self::$defaultOptions = new ATNDeserializationOptions();
+            self::$defaultOptions->readOnly = true;
         }
 
-        return $defaultOptions;
+        return self::$defaultOptions;
     }
 
     public function __construct(?ATNDeserializationOptions $options = null)

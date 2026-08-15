@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Antlr\Antlr4\Runtime\Atn\Actions;
 
-use Antlr\Antlr4\Runtime\Comparison\Hasher;
+use Antlr\Antlr4\Runtime\Comparison\MurmurHash;
 use Antlr\Antlr4\Runtime\Lexer;
 
 /**
@@ -65,7 +65,7 @@ final class LexerPushModeAction implements LexerAction
 
     public function hashCode(): int
     {
-        return Hasher::hash($this->getActionType(), $this->mode);
+        return MurmurHash::hash([$this->getActionType(), $this->mode]);
     }
 
     public function equals(object $other): bool

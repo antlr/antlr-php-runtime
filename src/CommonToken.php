@@ -104,11 +104,11 @@ final class CommonToken implements WritableToken
      * An empty {@see Pair}, which is used as the default value of
      * {@see CommonToken::source()} for tokens that do not have a source.
      */
+    private static ?Pair $emptySource = null;
+
     public static function emptySource(): Pair
     {
-        static $source;
-
-        return $source ??= new Pair(null, null);
+        return self::$emptySource ??= new Pair(null, null);
     }
 
     /**

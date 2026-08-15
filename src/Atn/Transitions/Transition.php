@@ -39,9 +39,20 @@ abstract class Transition implements Equatable
      */
     public ATNState $target;
 
+    /**
+     * The serialization type, resolved once at construction.
+     *
+     * `getSerializationType()` is called for every transition the closure walks,
+     * hundreds of thousands of times per parse, and each call returns the same
+     * constant. Reading a property instead removes that call from the
+     * simulator's inner loop.
+     */
+    public int $serializationType;
+
     public function __construct(ATNState $target)
     {
         $this->target = $target;
+        $this->serializationType = $this->getSerializationType();
     }
 
     /**

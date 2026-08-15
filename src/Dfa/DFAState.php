@@ -8,7 +8,7 @@ use Antlr\Antlr4\Runtime\Atn\ATNConfigSet;
 use Antlr\Antlr4\Runtime\Atn\LexerActionExecutor;
 use Antlr\Antlr4\Runtime\Comparison\Equality;
 use Antlr\Antlr4\Runtime\Comparison\Hashable;
-use Antlr\Antlr4\Runtime\Comparison\Hasher;
+use Antlr\Antlr4\Runtime\Comparison\MurmurHash;
 
 /**
  * A DFA state represents a set of possible ATN configurations.
@@ -137,6 +137,10 @@ final class DFAState implements Hashable
 
     public function hashCode(): int
     {
-        return Hasher::hash($this->configs);
+        // Hashing through `ATNConfigSet::hashCode()` matters: that value is cached
+        // once the set goes read-only, and a DFA state is looked up on every
+        // transition. Hashing the configurations directly here re-walked the whole
+        // set each time.
+        return MurmurHash::hash([$this->configs], 7);
     }
 }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Antlr\Antlr4\Runtime\Atn\SemanticContexts;
 
-use Antlr\Antlr4\Runtime\Comparison\Hasher;
+use Antlr\Antlr4\Runtime\Comparison\MurmurHash;
 use Antlr\Antlr4\Runtime\Recognizer;
 use Antlr\Antlr4\Runtime\RuleContext;
 
@@ -30,9 +30,16 @@ final class Predicate extends SemanticContext
         return $parser->sempred($localctx, $this->ruleIndex, $this->predIndex);
     }
 
+    /**
+     * Memoised: every field feeding it is set once in the constructor.
+     */
+    private ?int $cachedHashCode = null;
+
     public function hashCode(): int
     {
-        return Hasher::hash($this->ruleIndex, $this->predIndex, $this->isCtxDependent);
+        return $this->cachedHashCode ??= MurmurHash::hash(
+            [$this->ruleIndex, $this->predIndex, $this->isCtxDependent ? 1 : 0],
+        );
     }
 
     public function equals(object $other): bool

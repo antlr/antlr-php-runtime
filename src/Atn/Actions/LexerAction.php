@@ -14,7 +14,7 @@ use Antlr\Antlr4\Runtime\Lexer;
  *
  * @author Sam Harwell
  */
-interface LexerAction extends Hashable
+interface LexerAction extends Hashable, \Stringable
 {
     /**
      * Gets the serialization type of the lexer action.

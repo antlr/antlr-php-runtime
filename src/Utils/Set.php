@@ -11,6 +11,8 @@ use Antlr\Antlr4\Runtime\Comparison\Hashable;
 
 /**
  * @template T of Hashable
+ *
+ * @implements \IteratorAggregate<int, T>
  */
 final class Set implements Equatable, \IteratorAggregate, \Countable
 {
@@ -141,6 +143,16 @@ final class Set implements Equatable, \IteratorAggregate, \Countable
     }
 
     /**
+     * Empties the set while keeping its equivalence, mirroring
+     * `Array2DHashSet.clear()`.
+     */
+    public function clear(): void
+    {
+        $this->table = [];
+        $this->size = 0;
+    }
+
+    /**
      * @param T $value
      */
     public function remove(Hashable $value): void
@@ -152,7 +164,7 @@ final class Set implements Equatable, \IteratorAggregate, \Countable
         }
 
         foreach ($this->table[$hash] as $index => $entry) {
-            if ($this->equivalence->equivalent($value, $entry)) {
+            if (!$this->equivalence->equivalent($value, $entry)) {
                 continue;
             }
 
@@ -176,23 +188,18 @@ final class Set implements Equatable, \IteratorAggregate, \Countable
             return true;
         }
 
-        if (!$other instanceof self
-            || $this->size !== $other->size
-            || !$this->equivalence->equals($other)) {
+        if (!$other instanceof self || $this->size !== $other->size) {
             return false;
         }
 
-        foreach ($this->table as $hash => $bucket) {
-            if (!isset($other->table[$hash]) || \count($bucket) !== \count($other->table[$hash])) {
+        // Set equality is membership, not layout: `Array2DHashSet.equals()` is
+        // `size() == other.size() && containsAll(other)`. Walking buckets pairwise
+        // by index — as this used to — makes equality depend on insertion order
+        // and on the hash distribution, so two sets with the same elements could
+        // compare unequal.
+        foreach ($other as $value) {
+            if (!$this->contains($value)) {
                 return false;
-            }
-
-            $otherBucket = $other->table[$hash];
-
-            foreach ($bucket as $index => $value) {
-                if (!$value->equals($otherBucket[$index])) {
-                    return false;
-                }
             }
         }
 

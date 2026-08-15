@@ -24,11 +24,11 @@ abstract class SemanticContext implements Hashable
      * The default {@see SemanticContext}, which is semantically equivalent to
      * a predicate of the form `{true}?`.
      */
+    private static ?Predicate $none = null;
+
     public static function none(): Predicate
     {
-        static $none;
-
-        return $none ??= new Predicate();
+        return self::$none ??= new Predicate();
     }
 
     public static function andContext(?self $a, ?self $b): ?self
@@ -103,14 +103,23 @@ abstract class SemanticContext implements Hashable
     }
 
     /**
+     * @param Set<SemanticContext> $set
+     *
      * @return array<PrecedencePredicate>
      */
     public static function filterPrecedencePredicates(Set $set): array
     {
         $result = [];
+
         foreach ($set->getValues() as $context) {
             if ($context instanceof PrecedencePredicate) {
                 $result[] = $context;
+
+                // Java's version is a *mutating* filter — `iterator.remove()`.
+                // Only collecting them left every precedence predicate in the
+                // operand set, so `AND`/`OR` never reduced them to the single
+                // strictest/loosest bound and both survived into evaluation.
+                $set->remove($context);
             }
         }
 
