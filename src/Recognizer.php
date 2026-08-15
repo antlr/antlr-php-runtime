@@ -57,31 +57,40 @@ abstract class Recognizer
     public function getTokenTypeMap(): array
     {
         $vocabulary = $this->getVocabulary();
+        $cache = self::$tokenTypeMapCache;
 
-        self::$tokenTypeMapCache ??= new \WeakMap();
-        $result = self::$tokenTypeMapCache[$vocabulary] ?? null;
+        if ($cache === null) {
+            /** @var \WeakMap<Vocabulary, array<string, int>> $cache */
+            $cache = new \WeakMap();
 
-        if ($result === null) {
-            $result = [];
+            self::$tokenTypeMapCache = $cache;
+        }
 
-            for ($i = 0; $i <= $this->getATN()->maxTokenType; $i++) {
-                $literalName = $vocabulary->getLiteralName($i);
+        $cached = $cache[$vocabulary] ?? null;
 
-                if ($literalName !== null) {
-                    $result[$literalName] = $i;
-                }
+        if ($cached !== null) {
+            return $cached;
+        }
 
-                $symbolicName = $vocabulary->getSymbolicName($i);
+        $result = [];
 
-                if ($symbolicName !== null) {
-                    $result[$symbolicName] = $i;
-                }
+        for ($i = 0; $i <= $this->getATN()->maxTokenType; $i++) {
+            $literalName = $vocabulary->getLiteralName($i);
+
+            if ($literalName !== null) {
+                $result[$literalName] = $i;
             }
 
-            $result['EOF'] = Token::EOF;
+            $symbolicName = $vocabulary->getSymbolicName($i);
 
-            self::$tokenTypeMapCache[$vocabulary] = $result;
+            if ($symbolicName !== null) {
+                $result[$symbolicName] = $i;
+            }
         }
+
+        $result['EOF'] = Token::EOF;
+
+        $cache[$vocabulary] = $result;
 
         return $result;
     }

@@ -198,7 +198,7 @@ final class MurmurHash
     {
         $value &= self::MASK;
 
-        return (($value << $bits) | ($value >> 32 - $bits)) & self::MASK;
+        return ($value << $bits | $value >> 32 - $bits) & self::MASK;
     }
 
     private static function toSigned(int $value): int

@@ -25,6 +25,8 @@ final class AltAndContextEquivalence implements Equivalence
 
     private function __construct()
     {
+        // Private so the class can only be reached through `instance()`. It
+        // holds no state, so one instance serves every caller.
     }
 
     public static function instance(): self
