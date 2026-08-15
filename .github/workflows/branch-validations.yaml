@@ -15,13 +15,13 @@ jobs:
   security:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: symfonycorp/security-checker-action@v3
+      - uses: actions/checkout@v4
+      - uses: symfonycorp/security-checker-action@v5
 
   composer:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -29,19 +29,19 @@ jobs:
           tools: composer:v2
 
       - name: Composer cache
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           key: composer-${{ hashFiles('**/composer.lock') }}
           path: ${{ github.workspace }}/.cache
 
       - name: Vendor cache
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           key: vendor-${{ hashFiles('**/composer.lock') }}
           path: ${{ github.workspace }}/vendor
 
       - name: Tools cache
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           key: tools
           path: ${{ github.workspace }}/.cache
@@ -65,7 +65,7 @@ jobs:
   phpstan:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -73,19 +73,19 @@ jobs:
           tools: composer:v2
 
       - name: Composer cache
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           key: composer-${{ hashFiles('**/composer.lock') }}
           path: ${{ github.workspace }}/.cache
 
       - name: Vendor cache
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           key: vendor-${{ hashFiles('**/composer.lock') }}
           path: ${{ github.workspace }}/vendor
 
       - name: Tools cache
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           key: tools
           path: ${{ github.workspace }}/.cache
@@ -102,24 +102,24 @@ jobs:
   phpcs:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.1'
           tools: composer:v2
       - name: Composer cache
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           key: composer-${{ hashFiles('**/composer.lock') }}
           path: ${{ github.workspace }}/.cache
       - name: Vendor cache
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           key: vendor-${{ hashFiles('**/composer.lock') }}
           path: ${{ github.workspace }}/vendor
       - name: Tools cache
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           key: tools
           path: ${{ github.workspace }}/.cache
