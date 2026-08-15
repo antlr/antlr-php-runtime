@@ -8,8 +8,8 @@ use Antlr\Antlr4\Runtime\Atn\Actions\LexerAction;
 use Antlr\Antlr4\Runtime\Atn\Actions\LexerIndexedCustomAction;
 use Antlr\Antlr4\Runtime\CharStream;
 use Antlr\Antlr4\Runtime\Comparison\Equality;
-use Antlr\Antlr4\Runtime\Comparison\Equatable;
-use Antlr\Antlr4\Runtime\Comparison\Hasher;
+use Antlr\Antlr4\Runtime\Comparison\Hashable;
+use Antlr\Antlr4\Runtime\Comparison\MurmurHash;
 use Antlr\Antlr4\Runtime\Lexer;
 
 /**
@@ -22,7 +22,7 @@ use Antlr\Antlr4\Runtime\Lexer;
  *
  * @author Sam Harwell
  */
-final class LexerActionExecutor implements Equatable
+final class LexerActionExecutor implements Hashable
 {
     /** @var array<LexerAction> */
     private array $lexerActions;
@@ -187,11 +187,9 @@ final class LexerActionExecutor implements Equatable
 
     public function hashCode(): int
     {
-        if ($this->cachedHashCode === null) {
-            $this->cachedHashCode = Hasher::hash($this->lexerActions);
-        }
-
-        return $this->cachedHashCode;
+        // Java computes this once in the constructor:
+        // `initialize()`, one `update()` per action, `finish(hash, actions.length)`.
+        return $this->cachedHashCode ??= MurmurHash::hash($this->lexerActions);
     }
 
     public function equals(object $other): bool
@@ -207,9 +205,11 @@ final class LexerActionExecutor implements Equatable
 
     public function __toString(): string
     {
-        return \sprintf(
-            'LexerActionExecutor[%s]',
-            \implode(', ', \array_map('\strval', $this->lexerActions)),
+        $actions = \array_map(
+            static fn (LexerAction $action): string => (string) $action,
+            $this->lexerActions,
         );
+
+        return \sprintf('LexerActionExecutor[%s]', \implode(', ', $actions));
     }
 }

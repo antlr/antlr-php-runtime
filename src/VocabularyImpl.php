@@ -61,11 +61,11 @@ final class VocabularyImpl implements Vocabulary
      * {@see Vocabulary::getDisplayName()} returns the numeric value for
      * all tokens except {@see Token::EOF}.
      */
+    private static ?self $emptyVocabulary = null;
+
     public static function emptyVocabulary(): self
     {
-        static $empty;
-
-        return $empty ?? ($empty = new self());
+        return self::$emptyVocabulary ??= new self();
     }
 
     /**

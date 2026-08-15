@@ -21,11 +21,11 @@ final class Interval implements Equatable
         $this->stop = $stop;
     }
 
+    private static ?self $invalid = null;
+
     public static function invalid(): self
     {
-        static $invalid;
-
-        return $invalid ?? $invalid = new Interval(-1, -2);
+        return self::$invalid ??= new Interval(-1, -2);
     }
 
     public function contains(int $item): bool
@@ -35,6 +35,13 @@ final class Interval implements Equatable
 
     public function getLength(): int
     {
+        // An inverted interval is empty, not negatively long. `IntervalSet`
+        // sums these to report its cardinality, so a negative would silently
+        // corrupt the total.
+        if ($this->stop < $this->start) {
+            return 0;
+        }
+
         return $this->stop - $this->start + 1;
     }
 
@@ -124,10 +131,8 @@ final class Interval implements Equatable
 
     public function __toString(): string
     {
-        if ($this->start === $this->stop) {
-            return (string) $this->start;
-        }
-
+        // Java renders `a..b` unconditionally; collapsing a single-element
+        // interval to just `a` was a PHP-only shorthand.
         return $this->start . '..' . $this->stop;
     }
 }

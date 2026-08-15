@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Antlr\Antlr4\Runtime;
 
 use Antlr\Antlr4\Runtime\Comparison\Equality;
-use Antlr\Antlr4\Runtime\Comparison\Equatable;
+use Antlr\Antlr4\Runtime\Comparison\Hashable;
+use Antlr\Antlr4\Runtime\Comparison\MurmurHash;
 use Antlr\Antlr4\Runtime\Utils\StringUtils;
 
 /**
@@ -19,7 +20,7 @@ use Antlr\Antlr4\Runtime\Utils\StringUtils;
  * the range {@see Integer::MIN_VALUE} to {@see Integer::MAX_VALUE}
  * (inclusive).
  */
-final class IntervalSet implements Equatable
+final class IntervalSet implements Hashable
 {
     /** @var array<Interval> */
     protected array $intervals = [];
@@ -323,19 +324,21 @@ final class IntervalSet implements Equatable
             }
 
             // check for upper boundary
-            if ($v === $i->stop - 1) {
+            // Java compares against `b`, not `b - 1`; testing `stop - 1` meant
+            // the last element of an interval could never be removed.
+            if ($v === $i->stop) {
                 $this->intervals[$k] = new Interval($i->start, $i->stop - 1);
 
                 return;
             }
 
             // split existing range
-            if ($v < $i->stop - 1) {
-                $x = new Interval($i->start, $v);
-
-                $i->start = $v + 1;
-
-                \array_splice($this->intervals, $k, 0, [$x]);
+            if ($v > $i->start && $v < $i->stop) {
+                // The left half ends *before* the removed element. Using `$v` as
+                // the stop left the element in the set.
+                $stop = $i->stop;
+                $this->intervals[$k] = new Interval($i->start, $v - 1);
+                $this->addRange($v + 1, $stop);
 
                 return;
             }
@@ -485,6 +488,30 @@ final class IntervalSet implements Equatable
         }
 
         return $vocabulary->getDisplayName($a);
+    }
+
+    /**
+     * Java's `IntervalSet` defines `hashCode()`; the port implemented only
+     * `equals()`, leaving the two out of contract for any hash-based lookup.
+     */
+    public function hashCode(): int
+    {
+        $words = [];
+
+        foreach ($this->intervals as $interval) {
+            $words[] = $interval->start;
+            $words[] = $interval->stop;
+        }
+
+        return MurmurHash::hash($words);
+    }
+
+    /**
+     * @return array<Interval>
+     */
+    public function getIntervals(): array
+    {
+        return $this->intervals;
     }
 
     public function equals(object $other): bool

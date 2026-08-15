@@ -7,10 +7,6 @@ namespace Antlr\Antlr4\Runtime\Atn;
 use Antlr\Antlr4\Runtime\Atn\SemanticContexts\SemanticContext;
 use Antlr\Antlr4\Runtime\Atn\States\ATNState;
 use Antlr\Antlr4\Runtime\Atn\States\RuleStopState;
-use Antlr\Antlr4\Runtime\Comparison\Equality;
-use Antlr\Antlr4\Runtime\Comparison\Equivalence;
-use Antlr\Antlr4\Runtime\Comparison\Hashable;
-use Antlr\Antlr4\Runtime\Comparison\Hasher;
 use Antlr\Antlr4\Runtime\Utils\BitSet;
 use Antlr\Antlr4\Runtime\Utils\Map;
 
@@ -495,31 +491,7 @@ final class PredictionMode
     public static function getConflictingAltSubsets(ATNConfigSet $configs): array
     {
         /** @var Map<ATNConfig, BitSet> $configToAlts */
-        $configToAlts = new Map(
-            new class implements Equivalence {
-                public function equals(object $other): bool
-                {
-                    return $other instanceof self;
-                }
-
-                public function equivalent(Hashable $left, Hashable $right): bool
-                {
-                    return $left instanceof ATNConfig
-                        && $right instanceof ATNConfig
-                        && $left->state->stateNumber === $right->state->stateNumber
-                        && Equality::equals($left->context, $right->context);
-                }
-
-                public function hash(Hashable $value): int
-                {
-                    if (!$value instanceof ATNConfig) {
-                        throw new \InvalidArgumentException('Unsupported value.');
-                    }
-
-                    return Hasher::hash($value->state->stateNumber, $value->context);
-                }
-            },
-        );
+        $configToAlts = new Map(AltAndContextEquivalence::instance());
 
         foreach ($configs->elements() as $config) {
             $alts = $configToAlts->get($config);
@@ -540,6 +512,9 @@ final class PredictionMode
      * configuration `c` in `configs`:
      *
      *     map[c.{@see ATNConfig::$state}] U= c.{@see ATNConfig::$alt}
+     */
+    /**
+     * @return Map<\Antlr\Antlr4\Runtime\Atn\States\ATNState, \Antlr\Antlr4\Runtime\Utils\BitSet>
      */
     public static function getStateToAltMap(ATNConfigSet $configs): Map
     {
@@ -563,7 +538,7 @@ final class PredictionMode
     public static function hasStateAssociatedWithOneAlt(ATNConfigSet $configs): bool
     {
         foreach (self::getStateToAltMap($configs)->getValues() as $value) {
-            if ($value instanceof BitSet && $value->length() === 1) {
+            if ($value->length() === 1) {
                 return true;
             }
         }

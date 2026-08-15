@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Antlr\Antlr4\Runtime\Atn\SemanticContexts;
 
 use Antlr\Antlr4\Runtime\Comparison\Equality;
-use Antlr\Antlr4\Runtime\Comparison\Hasher;
+use Antlr\Antlr4\Runtime\Comparison\MurmurHash;
 use Antlr\Antlr4\Runtime\Recognizer;
 use Antlr\Antlr4\Runtime\RuleContext;
 use Antlr\Antlr4\Runtime\Utils\Set;
@@ -16,6 +16,12 @@ use Antlr\Antlr4\Runtime\Utils\Set;
  */
 final class AndOperator extends Operator
 {
+    /**
+     * Java seeds this with `AND.class.hashCode()`, a JVM identity hash that
+     * differs between runs, so it cannot be mirrored exactly. A fixed seed
+     * keeps the value deterministic, which is what the collections need.
+     */
+    private const HASH_SEED = 41;
     /** @var array<SemanticContext> */
     public array $operands;
 
@@ -127,9 +133,14 @@ final class AndOperator extends Operator
         return Equality::equals($this->operands, $other->operands);
     }
 
+    /**
+     * Memoised: every field feeding it is set once in the constructor.
+     */
+    private ?int $cachedHashCode = null;
+
     public function hashCode(): int
     {
-        return Hasher::hash(41, $this->operands);
+        return $this->cachedHashCode ??= MurmurHash::hash($this->operands, self::HASH_SEED);
     }
 
     public function __toString(): string

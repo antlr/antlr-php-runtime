@@ -51,6 +51,12 @@ class LexerATNSimulator extends ATNSimulator
     /** @var array<DFA> */
     public array $decisionToDFA = [];
 
+    /**
+     * Counts `match()` calls. Java keeps the same counter for debugging; it is
+     * not read by the algorithm.
+     */
+    private static int $matchCalls = 0;
+
     protected int $mode = Lexer::DEFAULT_MODE;
 
     /**
@@ -107,13 +113,7 @@ class LexerATNSimulator extends ATNSimulator
      */
     public function match(CharStream $input, int $mode): int
     {
-        static $match_calls;
-
-        if ($match_calls === null) {
-            $match_calls = 0;
-        }
-
-        $match_calls++;
+        self::$matchCalls++;
 
         $this->mode = $mode;
         $mark = $input->mark();
@@ -175,6 +175,7 @@ class LexerATNSimulator extends ATNSimulator
 
         $t = $input->LA(1);
         $s = $ds0; // s is current/from DFA state
+        $error = ATNSimulator::error();
 
         while (true) {
             // As we move src->trg, src->trg, we keep track of the previous trg to
@@ -195,13 +196,21 @@ class LexerATNSimulator extends ATNSimulator
             // A character will take us back to an existing DFA state
             // that already has lots of edges out of it. e.g., .* in comments.
             // print("Target for:" + str(s) + " and:" + str(t))
-            $target = $this->getExistingTargetState($s, $t);
+            // `getExistingTargetState()` and `consume()` are inlined here, and
+            // only here. This loop runs once per input character — it was the
+            // hottest path in the runtime — and each call PHP does not make is
+            // worth more than the readability. Both methods remain for callers
+            // and subclasses; keep them and this copy in step.
+            $edges = $s->edges;
+            $target = $edges !== null && $t >= self::MIN_DFA_EDGE && $t <= self::MAX_DFA_EDGE
+                ? $edges[$t - self::MIN_DFA_EDGE] ?? null
+                : null;
 
             if ($target === null) {
                 $target = $this->computeTargetState($input, $s, $t);
             }
 
-            if ($target === ATNSimulator::error()) {
+            if ($target === $error) {
                 break;
             }
 
@@ -210,11 +219,21 @@ class LexerATNSimulator extends ATNSimulator
             // position accurately reflect the state of the interpreter at the
             // end of the token.
             if ($t !== Token::EOF) {
-                $this->consume($input);
+                // Inline of `consume()`: the character it would re-read with
+                // `LA(1)` is already in `$t`.
+                if ($t === self::NEW_LINE_CODE) {
+                    $this->line++;
+                    $this->charPositionInLine = 0;
+                } else {
+                    $this->charPositionInLine++;
+                }
+
+                $input->consume();
             }
 
             if ($target->isAcceptState) {
                 $this->captureSimState($this->prevAccept, $input, $target);
+
                 if ($t === Token::EOF) {
                     break;
                 }
@@ -506,7 +525,7 @@ class LexerATNSimulator extends ATNSimulator
     ): ?LexerATNConfig {
         $cfg = null;
 
-        switch ($t->getSerializationType()) {
+        switch ($t->serializationType) {
             case Transition::RULE:
                 if (!$t instanceof RuleTransition) {
                     throw new \LogicException('Unexpected transition type.');

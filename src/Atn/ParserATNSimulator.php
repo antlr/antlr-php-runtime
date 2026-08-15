@@ -250,6 +250,8 @@ final class ParserATNSimulator extends ATNSimulator
      * This maps graphs a and b to merged result c. (a,b)&rarr;c. We can avoid
      * the merge if we ever see a and b again. Note that (b,a)&rarr;c should
      * also be examined during cache lookup.
+     *
+     * @var DoubleKeyMap<PredictionContext, PredictionContext, PredictionContext>|null
      */
     protected ?DoubleKeyMap $mergeCache = null;
 
@@ -372,9 +374,7 @@ final class ParserATNSimulator extends ATNSimulator
                 }
             }
 
-            $alt = $this->execATN($dfa, $s0, $input, $index, $outerContext);
-
-            return $alt ?? 0;
+            return $this->execATN($dfa, $s0, $input, $index, $outerContext);
         } finally {
             $this->mergeCache = null; // wack cache after each prediction
             $this->dfa = null;
@@ -422,7 +422,7 @@ final class ParserATNSimulator extends ATNSimulator
         TokenStream $input,
         int $startIndex,
         ParserRuleContext $outerContext,
-    ): ?int {
+    ): int {
         if (self::$traceAtnSimulation) {
             $this->logger->debug(
                 'execATN decision {decision}, DFA state {state}, LA(1)=={token} line {line}:{pos}',
@@ -889,6 +889,7 @@ final class ParserATNSimulator extends ATNSimulator
         // operation on the intermediate set to compute its initial value.
         if ($reach === null) {
             $reach = new ATNConfigSet($fullCtx);
+            /** @var Set<ATNConfig> $closureBusy */
             $closureBusy = new Set();
             $treatEofAsEpsilon = $t === Token::EOF;
 
@@ -1014,6 +1015,7 @@ final class ParserATNSimulator extends ATNSimulator
 
         foreach ($p->getTransitions() as $i => $t) {
             $c = new ATNConfig(null, $t->target, $initialContext, null, $i + 1);
+            /** @var Set<ATNConfig> $closureBusy */
             $closureBusy = new Set();
 
             $this->closure($c, $configs, $closureBusy, true, $fullCtx, false);
@@ -1478,6 +1480,9 @@ final class ParserATNSimulator extends ATNSimulator
      *       waste to pursue the closure. Might have to advance when we do
      *       ambig detection thought :(
      */
+    /**
+     * @param Set<ATNConfig> $closureBusy
+     */
     protected function closure(
         ATNConfig $config,
         ATNConfigSet $configs,
@@ -1503,6 +1508,9 @@ final class ParserATNSimulator extends ATNSimulator
         }
     }
 
+    /**
+     * @param Set<ATNConfig> $closureBusy
+     */
     protected function closureCheckingStopState(
         ATNConfig $config,
         ATNConfigSet $configs,
@@ -1585,6 +1593,9 @@ final class ParserATNSimulator extends ATNSimulator
     /**
      * Do the actual work of walking epsilon edges.
      */
+    /**
+     * @param Set<ATNConfig> $closureBusy
+     */
     protected function closure_(
         ATNConfig $config,
         ATNConfigSet $configs,
@@ -1597,25 +1608,30 @@ final class ParserATNSimulator extends ATNSimulator
         $p = $config->state;
 
         // optimization
-        if (!$p->onlyHasEpsilonTransitions()) {
+        // The accessors are read directly here: this runs hundreds of thousands
+        // of times per parse and each getter is a call PHP cannot inline.
+        if (!$p->epsilonOnlyTransitions) {
             // make sure to not return here, because EOF transitions can act as
             // both epsilon transitions and non-epsilon transitions.
 
             $configs->add($config, $this->mergeCache);
         }
 
-        foreach ($p->getTransitions() as $i => $t) {
+        $isRuleStop = $p instanceof RuleStopState;
+        $atDepthZero = $depth === 0;
+
+        foreach ($p->transitions as $i => $t) {
             if ($i === 0 && $this->canDropLoopEntryEdgeInLeftRecursiveRule($config)) {
                 continue;
             }
 
             $continueCollecting = $collectPredicates && !$t instanceof ActionTransition;
-            $c = $this->getEpsilonTarget($config, $t, $continueCollecting, $depth === 0, $fullCtx, $treatEofAsEpsilon);
+            $c = $this->getEpsilonTarget($config, $t, $continueCollecting, $atDepthZero, $fullCtx, $treatEofAsEpsilon);
 
             if ($c !== null) {
                 $newDepth = $depth;
 
-                if ($config->state instanceof RuleStopState) {
+                if ($isRuleStop) {
                     if ($fullCtx) {
                         throw new \LogicException('Unexpected error.');
                     }
@@ -1660,15 +1676,32 @@ final class ParserATNSimulator extends ATNSimulator
                     }
                 }
 
-                $this->closureCheckingStopState(
-                    $c,
-                    $configs,
-                    $closureBusy,
-                    $continueCollecting,
-                    $fullCtx,
-                    $newDepth,
-                    $treatEofAsEpsilon,
-                );
+                // `closureCheckingStopState()` forwards straight to `closure_()`
+                // unless the state is a rule stop, so for the common case the
+                // frame is skipped. It also emits the ATN trace line, hence the
+                // guard: with tracing on, the original path is always taken and
+                // the trace stays byte-identical.
+                if (self::$traceAtnSimulation || $c->state instanceof RuleStopState) {
+                    $this->closureCheckingStopState(
+                        $c,
+                        $configs,
+                        $closureBusy,
+                        $continueCollecting,
+                        $fullCtx,
+                        $newDepth,
+                        $treatEofAsEpsilon,
+                    );
+                } else {
+                    $this->closure_(
+                        $c,
+                        $configs,
+                        $closureBusy,
+                        $continueCollecting,
+                        $fullCtx,
+                        $newDepth,
+                        $treatEofAsEpsilon,
+                    );
+                }
             }
         }
     }
@@ -1773,12 +1806,18 @@ final class ParserATNSimulator extends ATNSimulator
          * Are we the special loop entry/exit state? or SLL wildcard
          */
 
+        // Cheapest discriminator first: this is called for the first transition
+        // out of every state, and almost none of them are loop entries.
+        if (!$p instanceof StarLoopEntryState) {
+            return false;
+        }
+
         if ($config->context === null) {
             throw new \LogicException('Prediction context cannot be null.');
         }
 
         if ($p->getStateType() !== ATNState::STAR_LOOP_ENTRY
-            || ($p instanceof StarLoopEntryState && !$p->isPrecedenceDecision)
+            || !$p->isPrecedenceDecision
             || $config->context->isEmpty()
             || $config->context->hasEmptyPath()) {
             return false;
@@ -1875,7 +1914,7 @@ final class ParserATNSimulator extends ATNSimulator
         bool $fullCtx,
         bool $treatEofAsEpsilon,
     ): ?ATNConfig {
-        switch ($t->getSerializationType()) {
+        switch ($t->serializationType) {
             case Transition::RULE:
                 if (!$t instanceof RuleTransition) {
                     throw new \LogicException('Unexpected transition type.');

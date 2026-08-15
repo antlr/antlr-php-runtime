@@ -60,9 +60,12 @@ abstract class ATNState implements Hashable
     /**
      * Track the transitions emanating from this ATN state.
      *
+     * Public, as in the reference runtime, so the simulator's inner loops can
+     * read it without a getter call.
+     *
      * @var array<Transition>
      */
-    protected array $transitions = [];
+    public array $transitions = [];
 
     /**
      * Used to cache lookahead during parsing, not used during construction.
@@ -75,7 +78,9 @@ abstract class ATNState implements Hashable
             return true;
         }
 
-        return $other instanceof static
+        // Java compares against `ATNState`, not the runtime class, so two states
+        // of different concrete types are still comparable.
+        return $other instanceof self
             && $this->stateNumber === $other->stateNumber;
     }
 
@@ -152,7 +157,7 @@ abstract class ATNState implements Hashable
 
     public function hashCode(): int
     {
-        return $this->getStateType();
+        return $this->stateNumber;
     }
 
     abstract public function getStateType(): int;

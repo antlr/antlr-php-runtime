@@ -8,7 +8,7 @@ use Antlr\Antlr4\Runtime\Atn\SemanticContexts\SemanticContext;
 use Antlr\Antlr4\Runtime\Atn\States\ATNState;
 use Antlr\Antlr4\Runtime\Comparison\Equality;
 use Antlr\Antlr4\Runtime\Comparison\Hashable;
-use Antlr\Antlr4\Runtime\Comparison\Hasher;
+use Antlr\Antlr4\Runtime\Comparison\MurmurHash;
 use Antlr\Antlr4\Runtime\PredictionContexts\PredictionContext;
 
 /**
@@ -127,22 +127,25 @@ class ATNConfig implements Hashable
             return true;
         }
 
+        // Field order follows Java's, cheapest discriminator first. Comparing the
+        // state by number rather than through `Equality::equals()` also avoids a
+        // full object comparison on the hottest path in the simulator.
         return $other instanceof self
+            && $this->state->stateNumber === $other->state->stateNumber
             && $this->alt === $other->alt
-            && $this->isPrecedenceFilterSuppressed() === $other->isPrecedenceFilterSuppressed()
+            && Equality::equals($this->context, $other->context)
             && $this->semanticContext->equals($other->semanticContext)
-            && Equality::equals($this->state, $other->state)
-            && Equality::equals($this->context, $other->context);
+            && $this->isPrecedenceFilterSuppressed() === $other->isPrecedenceFilterSuppressed();
     }
 
     public function hashCode(): int
     {
-        return Hasher::hash(
+        return MurmurHash::hash([
             $this->state->stateNumber,
             $this->alt,
             $this->context,
             $this->semanticContext,
-        );
+        ], 7);
     }
 
     public function toString(bool $showAlt): string
@@ -172,15 +175,10 @@ class ATNConfig implements Hashable
 
     public function __toString(): string
     {
-        return \sprintf(
-            '(%s,%d%s%s%s)',
-            $this->state,
-            $this->alt,
-            $this->context !== null ? ',[' . $this->context . ']' : '',
-            $this->semanticContext->equals(SemanticContext::none())
-                ? ''
-                : ',' . $this->semanticContext,
-            $this->reachesIntoOuterContext > 0 ? ',up=' . $this->reachesIntoOuterContext : '',
-        );
+        // Java's no-arg `toString()` is `toString(null, true)`. Duplicating the
+        // formatting here is what let the two drift: this copy printed the raw
+        // `reachesIntoOuterContext` field, which carries the
+        // SUPPRESS_PRECEDENCE_FILTER bit, instead of `getOuterContextDepth()`.
+        return $this->toString(true);
     }
 }

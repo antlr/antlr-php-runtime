@@ -7,7 +7,7 @@ namespace Antlr\Antlr4\Runtime\Atn;
 use Antlr\Antlr4\Runtime\Atn\States\ATNState;
 use Antlr\Antlr4\Runtime\Atn\States\DecisionState;
 use Antlr\Antlr4\Runtime\Comparison\Equality;
-use Antlr\Antlr4\Runtime\Comparison\Hasher;
+use Antlr\Antlr4\Runtime\Comparison\MurmurHash;
 use Antlr\Antlr4\Runtime\PredictionContexts\PredictionContext;
 
 final class LexerATNConfig extends ATNConfig
@@ -43,14 +43,14 @@ final class LexerATNConfig extends ATNConfig
 
     public function hashCode(): int
     {
-        return Hasher::hash(
+        return MurmurHash::hash([
             $this->state->stateNumber,
             $this->alt,
             $this->context,
             $this->semanticContext,
-            $this->passedThroughNonGreedyDecision,
+            $this->passedThroughNonGreedyDecision ? 1 : 0,
             $this->lexerActionExecutor,
-        );
+        ], 7);
     }
 
     public function equals(object $other): bool
@@ -63,15 +63,18 @@ final class LexerATNConfig extends ATNConfig
             return false;
         }
 
-        if (!parent::equals($other)) {
-            return false;
-        }
-
+        // Java checks the two cheap lexer-specific fields *before* delegating to
+        // the parent, which is the expensive comparison (context and semantic
+        // context). Doing it the other way round paid that cost on every miss.
         if ($this->passedThroughNonGreedyDecision !== $other->passedThroughNonGreedyDecision) {
             return false;
         }
 
-        return Equality::equals($this->lexerActionExecutor, $other->lexerActionExecutor);
+        if (!Equality::equals($this->lexerActionExecutor, $other->lexerActionExecutor)) {
+            return false;
+        }
+
+        return parent::equals($other);
     }
 
     private static function checkNonGreedyDecision(LexerATNConfig $source, ATNState $target): bool

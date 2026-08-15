@@ -48,11 +48,11 @@ final class CommonTokenFactory implements TokenFactory
      * This token factory does not explicitly copy token text when constructing
      * tokens.
      */
+    private static ?self $default = null;
+
     public static function default(): self
     {
-        static $default;
-
-        return $default ??= new CommonTokenFactory();
+        return self::$default ??= new CommonTokenFactory();
     }
 
     public function createEx(

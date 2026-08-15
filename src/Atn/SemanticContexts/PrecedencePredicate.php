@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Antlr\Antlr4\Runtime\Atn\SemanticContexts;
 
-use Antlr\Antlr4\Runtime\Comparison\Hasher;
 use Antlr\Antlr4\Runtime\Recognizer;
 use Antlr\Antlr4\Runtime\RuleContext;
 
@@ -33,7 +32,7 @@ final class PrecedencePredicate extends SemanticContext
 
     public function hashCode(): int
     {
-        return Hasher::hash(31, $this->precedence);
+        return 31 + $this->precedence;
     }
 
     public function compareTo(PrecedencePredicate $other): int

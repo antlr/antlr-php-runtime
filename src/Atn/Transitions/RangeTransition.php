@@ -22,7 +22,7 @@ final class RangeTransition extends Transition
         $this->to = $to;
     }
 
-    public function label(): ?IntervalSet
+    public function label(): IntervalSet
     {
         return IntervalSet::fromRange($this->from, $this->to);
     }

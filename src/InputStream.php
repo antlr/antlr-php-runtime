@@ -4,10 +4,19 @@ declare(strict_types=1);
 
 namespace Antlr\Antlr4\Runtime;
 
-use Antlr\Antlr4\Runtime\Utils\StringUtils;
-
 /**
  * Vacuum all input from a string and then treat it like a buffer.
+ *
+ * Indexing is by Unicode code point, matching Java's `CodePointCharStream`, so
+ * an astral-plane character occupies one position rather than the two a UTF-16
+ * stream would use.
+ *
+ * The decoding is done **once**, up front, into an array of code points. The
+ * lexer reads `LA()` several times per input character — it was the single
+ * hottest call in the runtime — and decoding on each read made every one of
+ * those a `mb_ord()` call. Text extraction needs the original bytes, so a byte
+ * offset per code point is kept alongside, letting `getText()` be a plain
+ * `substr()` instead of a scan.
  */
 final class InputStream implements CharStream
 {
@@ -19,24 +28,81 @@ final class InputStream implements CharStream
 
     public string $input;
 
-    /** @var array<string> */
-    public array $characters = [];
+    /**
+     * The decoded input, one Unicode code point per element.
+     *
+     * @var array<int>
+     */
+    private array $codePoints = [];
 
     /**
-     * @param array<string> $characters
+     * Byte offset of each code point within {@see InputStream::$input}, with one
+     * extra entry holding the total length so a slice's end is always known.
+     * Empty when the input is pure ASCII, where the offset is the index itself.
+     *
+     * @var array<int>
      */
-    private function __construct(string $input, array $characters)
+    private array $byteOffsets = [];
+
+    /**
+     * @param array<int> $codePoints
+     * @param array<int> $byteOffsets
+     */
+    private function __construct(string $input, array $codePoints, array $byteOffsets)
     {
         $this->input = $input;
-        $this->characters = $characters;
-        $this->size = \count($this->characters);
+        $this->codePoints = $codePoints;
+        $this->byteOffsets = $byteOffsets;
+        $this->size = \count($codePoints);
     }
 
     public static function fromString(string $input): InputStream
     {
-        $chars = \preg_split('//u', $input, -1, \PREG_SPLIT_NO_EMPTY);
+        if ($input === '') {
+            return new self($input, [], []);
+        }
 
-        return new self($input, $chars === false ? [] : $chars);
+        $length = \strlen($input);
+
+        // Pure ASCII is the overwhelmingly common case and needs no decoding at
+        // all: byte value is code point, and byte offset is index.
+        if (\preg_match('/[\x80-\xFF]/', $input) === 0) {
+            /** @var array<int> $bytes */
+            $bytes = \unpack('C*', $input);
+
+            return new self($input, \array_values($bytes), []);
+        }
+
+        // Converting the whole string at once keeps the decoding inside mbstring
+        // rather than paying a PHP call per character.
+        $utf32 = @\mb_convert_encoding($input, 'UTF-32BE', 'UTF-8');
+
+        if ($utf32 === '') {
+            return new self($input, [], []);
+        }
+
+        /** @var array<int> $unpacked */
+        $unpacked = \unpack('N*', $utf32);
+        $codePoints = \array_values($unpacked);
+
+        // A code point's UTF-8 width is a function of its value, so the offsets
+        // follow from the decoded points without re-walking the bytes.
+        $byteOffsets = [];
+        $offset = 0;
+
+        foreach ($codePoints as $codePoint) {
+            $byteOffsets[] = $offset;
+            $offset += match (true) {
+                $codePoint < 0x80 => 1,
+                $codePoint < 0x800 => 2,
+                $codePoint < 0x10000 => 3,
+                default => 4,
+            };
+        }
+
+        $byteOffsets[] = $length;
+
+        return new self($input, $codePoints, $byteOffsets);
     }
 
     public static function fromPath(string $path): InputStream
@@ -47,7 +113,25 @@ final class InputStream implements CharStream
             throw new \InvalidArgumentException(\sprintf('File not found at %s.', $path));
         }
 
-        return self::fromString($content);
+        // `CharStreams.fromPath()` records the path as the stream's source name;
+        // it surfaces through `Lexer::getSourceName()` and `Parser::getSourceName()`.
+        $stream = self::fromString($content);
+        $stream->name = $path;
+
+        return $stream;
+    }
+
+    /**
+     * The decoded code points backing this stream.
+     *
+     * Exposed so the lexer's inner loop can read characters without a method
+     * call per access; treat it as read-only.
+     *
+     * @return array<int>
+     */
+    public function getCodePoints(): array
+    {
+        return $this->codePoints;
     }
 
     public function getIndex(): int
@@ -88,7 +172,7 @@ final class InputStream implements CharStream
             return Token::EOF;
         }
 
-        return StringUtils::codePoint($this->characters[$pos]);
+        return $this->codePoints[$pos];
     }
 
     public function LT(int $offset): int
@@ -132,16 +216,27 @@ final class InputStream implements CharStream
             $stop = $this->size - 1;
         }
 
-        if ($start >= $this->size) {
+        if ($start >= $this->size || $start > $stop) {
             return '';
         }
 
-        return \implode(\array_slice($this->characters, $start, $stop - $start + 1));
+        if ($this->byteOffsets === []) {
+            // ASCII: index and byte offset coincide.
+            return \substr($this->input, $start, $stop - $start + 1);
+        }
+
+        $from = $this->byteOffsets[$start];
+
+        return \substr($this->input, $from, $this->byteOffsets[$stop + 1] - $from);
     }
 
     public function getSourceName(): string
     {
-        return '';
+        // Java falls back to `IntStream.UNKNOWN_SOURCE_NAME` rather than an empty
+        // string, and the constant already existed here unused.
+        return $this->name === '' || $this->name === '<empty>'
+            ? IntStream::UNKNOWN_SOURCE_NAME
+            : $this->name;
     }
 
     public function __toString(): string

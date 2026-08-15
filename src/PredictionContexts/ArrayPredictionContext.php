@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Antlr\Antlr4\Runtime\PredictionContexts;
 
 use Antlr\Antlr4\Runtime\Comparison\Equality;
-use Antlr\Antlr4\Runtime\Comparison\Hasher;
+use Antlr\Antlr4\Runtime\Comparison\MurmurHash;
 
 final class ArrayPredictionContext extends PredictionContext
 {
@@ -86,11 +86,18 @@ final class ArrayPredictionContext extends PredictionContext
             return false;
         }
 
-        if ($this->returnStates === $other->returnStates) {
+        // Cheap rejection first, as Java does: contexts that hash differently
+        // cannot be equal, and this comparison runs constantly during merging.
+        if (($this->cachedHashCode ?? $this->hashCode()) !== ($other->cachedHashCode ?? $other->hashCode())) {
             return false;
         }
 
-        return Equality::equals($this->parents, $other->parents);
+        // This condition used to be inverted — `if ($returnStates === $other->returnStates) return false;`
+        // — which declared identical contexts unequal and judged differing ones
+        // on their parents alone. It stayed hidden for as long as
+        // `ATNConfigSet::add()` was failing to merge contexts at all.
+        return $this->returnStates === $other->returnStates
+            && Equality::equals($this->parents, $other->parents);
     }
 
     public function __toString(): string
@@ -125,6 +132,12 @@ final class ArrayPredictionContext extends PredictionContext
 
     protected function computeHashCode(): int
     {
-        return Hasher::hash($this->parents, $this->returnStates);
+        // `PredictionContext.calculateHashCode(parents, returnStates)`: every
+        // parent, then every return state, folded into one accumulation seeded
+        // with INITIAL_HASH and finished with `2 * count`.
+        return MurmurHash::hash(
+            [...$this->parents, ...$this->returnStates],
+            PredictionContext::INITIAL_HASH,
+        );
     }
 }

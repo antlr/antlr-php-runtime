@@ -18,7 +18,7 @@ final class AtomTransition extends Transition
         $this->label = $label;
     }
 
-    public function label(): ?IntervalSet
+    public function label(): IntervalSet
     {
         return IntervalSet::fromInt($this->label);
     }

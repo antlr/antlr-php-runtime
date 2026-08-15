@@ -76,11 +76,11 @@ class RuleContext implements RuleNode
         $this->invokingState = $invokingState ?? -1;
     }
 
+    private static ?ParserRuleContext $emptyContext = null;
+
     public static function emptyContext(): ParserRuleContext
     {
-        static $empty;
-
-        return $empty ?? ($empty = new ParserRuleContext(null));
+        return self::$emptyContext ??= new ParserRuleContext(null);
     }
 
     public function depth(): int

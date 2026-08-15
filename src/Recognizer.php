@@ -17,8 +17,15 @@ abstract class Recognizer
     /** @var array<string> */
     public array $log = [];
 
-    /** @var array<string, array<string, int>> */
-    private static array $tokenTypeMapCache = [];
+    /**
+     * Java keys this on the vocabulary itself in a `WeakHashMap`, so a cached
+     * map dies with the vocabulary it describes. `WeakMap` is the exact
+     * equivalent: keying on identity like `SplObjectStorage`, but without
+     * pinning every vocabulary the process has ever seen in memory.
+     *
+     * @var \WeakMap<Vocabulary, array<string, int>>|null
+     */
+    private static ?\WeakMap $tokenTypeMapCache = null;
 
     /** @var array<ANTLRErrorListener> */
     private array $listeners;
@@ -50,31 +57,40 @@ abstract class Recognizer
     public function getTokenTypeMap(): array
     {
         $vocabulary = $this->getVocabulary();
+        $cache = self::$tokenTypeMapCache;
 
-        $key = \spl_object_hash($vocabulary);
-        $result = self::$tokenTypeMapCache[$key] ?? null;
+        if ($cache === null) {
+            /** @var \WeakMap<Vocabulary, array<string, int>> $cache */
+            $cache = new \WeakMap();
 
-        if ($result === null) {
-            $result = [];
+            self::$tokenTypeMapCache = $cache;
+        }
 
-            for ($i = 0; $i <= $this->getATN()->maxTokenType; $i++) {
-                $literalName = $vocabulary->getLiteralName($i);
+        $cached = $cache[$vocabulary] ?? null;
 
-                if ($literalName !== null) {
-                    $result[$literalName] = $i;
-                }
+        if ($cached !== null) {
+            return $cached;
+        }
 
-                $symbolicName = $vocabulary->getSymbolicName($i);
+        $result = [];
 
-                if ($symbolicName !== null) {
-                    $result[$symbolicName] = $i;
-                }
+        for ($i = 0; $i <= $this->getATN()->maxTokenType; $i++) {
+            $literalName = $vocabulary->getLiteralName($i);
+
+            if ($literalName !== null) {
+                $result[$literalName] = $i;
             }
 
-            $result['EOF'] = Token::EOF;
+            $symbolicName = $vocabulary->getSymbolicName($i);
 
-            self::$tokenTypeMapCache[$key] = $result;
+            if ($symbolicName !== null) {
+                $result[$symbolicName] = $i;
+            }
         }
+
+        $result['EOF'] = Token::EOF;
+
+        $cache[$vocabulary] = $result;
 
         return $result;
     }

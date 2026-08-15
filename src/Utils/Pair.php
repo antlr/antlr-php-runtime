@@ -6,7 +6,7 @@ namespace Antlr\Antlr4\Runtime\Utils;
 
 use Antlr\Antlr4\Runtime\Comparison\Equality;
 use Antlr\Antlr4\Runtime\Comparison\Equatable;
-use Antlr\Antlr4\Runtime\Comparison\Hasher;
+use Antlr\Antlr4\Runtime\Comparison\MurmurHash;
 
 final class Pair implements Equatable
 {
@@ -33,13 +33,14 @@ final class Pair implements Equatable
 
     public function hashCode(): int
     {
-        return Hasher::hash($this->a, $this->b);
+        return MurmurHash::hash([$this->a, $this->b]);
     }
 
     public function __toString(): string
     {
+        // Java's `String.format("(%s, %s)", a, b)` includes the parentheses.
         return \sprintf(
-            '%s, %s',
+            '(%s, %s)',
             $this->a === null
                 ? 'null'
                 : ($this->a instanceof \Stringable ? (string) $this->a : $this->a::class),
